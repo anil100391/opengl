@@ -5,6 +5,35 @@
 #include <fstream>
 #include <sstream>
 
+#ifdef WIN
+    #define ASSERT(x) if (!(x)) __debugBreak();
+    #define GLCall(x) GLClearError();\
+        x;\
+        ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+#endif
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+static void GLClearError()
+{
+    while ( glGetError() != GL_NO_ERROR )
+    {
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+static bool GLLogCall(const char* function, const char* file, int line)
+{
+    while(GLenum error = glGetError())
+    {
+        std::cout << "[OpenGL Error] (" << error << "):" << function << " " << file << ": " << line << "\n";
+        return false;
+    }
+
+    return true;
+}
+
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 struct ShaderProgramSource
