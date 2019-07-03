@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int main(void)
 {
     GLFWwindow* window;
@@ -22,10 +24,7 @@ int main(void)
     glfwMakeContextCurrent(window);
 
     if ( GLEW_OK == glewInit() )
-    {
-        std::cout << "all good\n";
         std::cout << glGetString(GL_VERSION) << std::endl;
-    }
     else
         return 0;
 
@@ -37,6 +36,8 @@ int main(void)
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+    glEnableVertexAttribArray(0);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
