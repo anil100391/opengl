@@ -1,3 +1,3 @@
 all:
-	g++ app.cpp -lGL -lglfw -lGLEW
+	g++ renderer.cpp indexbuffer.cpp vertexbuffer.cpp app.cpp -lGL -lglfw -lGLEW
 

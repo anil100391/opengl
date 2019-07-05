@@ -1,38 +1,11 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "renderer.h"
+#include "vertexbuffer.h"
+#include "indexbuffer.h"
+
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
-
-#ifdef WIN
-    #define ASSERT(x) if (!(x)) __debugBreak();
-    #define GLCall(x) GLClearError();\
-        x;\
-        ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-#endif
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-static void GLClearError()
-{
-    while ( glGetError() != GL_NO_ERROR )
-    {
-    }
-}
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-static bool GLLogCall(const char* function, const char* file, int line)
-{
-    while(GLenum error = glGetError())
-    {
-        std::cout << "[OpenGL Error] (" << error << "):" << function << " " << file << ": " << line << "\n";
-        return false;
-    }
-
-    return true;
-}
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -48,7 +21,7 @@ static ShaderProgramSource ParseShader(const std::string& filepath)
 {
     std::ifstream stream(filepath);
 
-    enum ShaderType
+    enum class ShaderType
     {
         NONE = -1, VERTEX = 0, FRAGMENT = 1
     };
@@ -56,7 +29,7 @@ static ShaderProgramSource ParseShader(const std::string& filepath)
     std::string line;
     std::stringstream ss[2];
 
-    ShaderType type = NONE;
+    ShaderType type = ShaderType::NONE;
     while (getline(stream, line))
     {
         if ( line.find("#shader") != std::string::npos )
@@ -68,7 +41,7 @@ static ShaderProgramSource ParseShader(const std::string& filepath)
         }
         else
         {
-            ss[type] << line << "\n";
+            ss[(int)type] << line << "\n";
         }
     }
 
@@ -164,18 +137,13 @@ int main(void)
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    unsigned int buffer = 0;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), positions, GL_STATIC_DRAW);
+    {
+    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
 
-    unsigned int ibo = 0;
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    IndexBuffer ib(indices, 6);
 
     ShaderProgramSource source = ParseShader("res/shaders/basic.shader");
     unsigned int program = CreateShader(source.VertexSource, source.FragmentSource);
@@ -209,7 +177,7 @@ int main(void)
         glUniform4f(location, r, 0.3f, 0.8f, 1.0f);
 
         glBindVertexArray(vao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        ib.Bind();
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
@@ -221,6 +189,9 @@ int main(void)
     }
 
     glDeleteProgram(program);
+
+    }
+
     glfwTerminate();
     return 0;
 }
