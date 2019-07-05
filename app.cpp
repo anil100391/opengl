@@ -1,38 +1,11 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "renderer.h"
+#include "vertexbuffer.h"
+#include "indexbuffer.h"
+
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
-
-#ifdef WIN
-    #define ASSERT(x) if (!(x)) __debugBreak();
-    #define GLCall(x) GLClearError();\
-        x;\
-        ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-#endif
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-static void GLClearError()
-{
-    while ( glGetError() != GL_NO_ERROR )
-    {
-    }
-}
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-static bool GLLogCall(const char* function, const char* file, int line)
-{
-    while(GLenum error = glGetError())
-    {
-        std::cout << "[OpenGL Error] (" << error << "):" << function << " " << file << ": " << line << "\n";
-        return false;
-    }
-
-    return true;
-}
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -155,18 +128,14 @@ int main(void)
 
     unsigned int indices[] = { 0, 1, 2,
                                2, 3, 0 };
-    unsigned int buffer = 0;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), positions, GL_STATIC_DRAW);
+
+    {
+    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
 
-    unsigned int ibo = 0;
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    IndexBuffer ib(indices, 6);
 
     ShaderProgramSource source = ParseShader("res/shaders/basic.shader");
     unsigned int program = CreateShader(source.VertexSource, source.FragmentSource);
@@ -200,6 +169,9 @@ int main(void)
     }
 
     glDeleteProgram(program);
+
+    }
+
     glfwTerminate();
     return 0;
 }
