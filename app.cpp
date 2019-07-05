@@ -1,4 +1,6 @@
 #include "renderer.h"
+#include "vertexarray.h"
+#include "vertexbufferlayout.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
 
@@ -133,15 +135,13 @@ int main(void)
     unsigned int indices[] = { 0, 1, 2,
                                2, 3, 0 };
 
-    unsigned int vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
     {
+    VertexArray va;
     VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    va.AddBuffer(vb, layout);
 
     IndexBuffer ib(indices, 6);
 
@@ -151,9 +151,8 @@ int main(void)
 
     // reset ogl states
     glUseProgram(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    va.Unbind();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
     int location = glGetUniformLocation(program, "u_Color");
 
@@ -176,7 +175,7 @@ int main(void)
         glUseProgram(program);
         glUniform4f(location, r, 0.3f, 0.8f, 1.0f);
 
-        glBindVertexArray(vao);
+        va.Bind();
         ib.Bind();
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
