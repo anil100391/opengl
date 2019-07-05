@@ -48,7 +48,7 @@ static ShaderProgramSource ParseShader(const std::string& filepath)
 {
     std::ifstream stream(filepath);
 
-    enum ShaderType
+    enum class ShaderType
     {
         NONE = -1, VERTEX = 0, FRAGMENT = 1
     };
@@ -56,7 +56,7 @@ static ShaderProgramSource ParseShader(const std::string& filepath)
     std::string line;
     std::stringstream ss[2];
 
-    ShaderType type = NONE;
+    ShaderType type = ShaderType::NONE;
     while (getline(stream, line))
     {
         if ( line.find("#shader") != std::string::npos )
@@ -68,7 +68,7 @@ static ShaderProgramSource ParseShader(const std::string& filepath)
         }
         else
         {
-            ss[type] << line << "\n";
+            ss[(int)type] << line << "\n";
         }
     }
 
