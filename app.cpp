@@ -4,6 +4,7 @@
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
 #include "shader.h"
+#include "texture.h"
 
 #include <iostream>
 #include <string>
@@ -40,19 +41,22 @@ int main(void)
     else
         return 0;
 
-    float positions[] = { -0.5f, -0.5f,
-                           0.5f, -0.5f,
-                           0.5f,  0.5f,
-                          -0.5f,  0.5f };
+    float positions[] = { -0.5f, -0.5f, 0.0f, 0.0f,
+                           0.5f, -0.5f, 1.0f, 0.0f,
+                           0.5f,  0.5f, 1.0f, 1.0f,
+                          -0.5f,  0.5f, 0.0f, 1.0f };
 
     unsigned int indices[] = { 0, 1, 2,
                                2, 3, 0 };
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     {
     VertexArray va;
-    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+    VertexBuffer vb(positions, 4 * 4 * sizeof(float));
 
     VertexBufferLayout layout;
+    layout.Push<float>(2);
     layout.Push<float>(2);
     va.AddBuffer(vb, layout);
 
@@ -60,6 +64,10 @@ int main(void)
 
     Shader shader("res/shaders/basic.shader");
     shader.Bind();
+
+    Texture tex("res/textures/sample.jpg");
+    tex.Bind(0);
+    shader.SetUniform1i("u_Texture", 0);
 
     // reset ogl states
     shader.Unbind();
