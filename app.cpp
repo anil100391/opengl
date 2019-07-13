@@ -1,20 +1,12 @@
 #include "renderer.h"
-#include "vertexarray.h"
-#include "vertexbufferlayout.h"
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
-#include "shader.h"
-#include "texture.h"
 
 #include <iostream>
 #include <string>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include "tests/testtexture2d.h"
 #include "tests/testclearcolor.h"
 
 const char* glsl_version = "#version 130";
@@ -66,6 +58,7 @@ int main(void)
     currentTest = testMenu;
 
     testMenu->RegisterTest<test::TestClearColor>("Clear Color");
+    testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
