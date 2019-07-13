@@ -9,6 +9,9 @@
 #include <iostream>
 #include <string>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 int main(void)
@@ -68,6 +71,9 @@ int main(void)
     Texture tex("res/textures/sample.jpg");
     tex.Bind(0);
     shader.SetUniform1i("u_Texture", 0);
+
+    glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+    shader.SetUniformMat4f("u_MVP", proj);
 
     // reset ogl states
     shader.Unbind();

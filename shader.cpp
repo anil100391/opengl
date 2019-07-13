@@ -55,6 +55,13 @@ void Shader::SetUniform4f(const std::string& name, float f0, float f1, float f2,
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+void Shader::SetUniformMat4f(const std::string& name, const glm::mat4& mat)
+{
+    glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int Shader::GetUniformLocation(const std::string& name)
 {
     int location = -1;
