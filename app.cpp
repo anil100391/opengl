@@ -69,11 +69,12 @@ int main(void)
     float r = 0.0f;
     float increment = 0.05f;
 
+    Renderer renderer;
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.Clear();
 
         if ( r < 0.0f )
             increment = 0.05f;
@@ -85,10 +86,7 @@ int main(void)
         shader.Bind();
         shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
 
-        va.Bind();
-        ib.Bind();
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        renderer.Draw(va, ib, shader);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
