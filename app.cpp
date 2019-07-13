@@ -12,6 +12,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+const char* glsl_version = "#version 130";
+
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 int main(void)
@@ -74,11 +80,8 @@ int main(void)
 
     glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
 
-    glm::mat4 mvp = proj * view * model;
-
-    shader.SetUniformMat4f("u_MVP", mvp);
+    glm::vec3 translation(200.0f, 200.0f, 0.0f);
 
     // reset ogl states
     shader.Unbind();
@@ -89,11 +92,32 @@ int main(void)
     float increment = 0.05f;
 
     Renderer renderer;
+
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         renderer.Clear();
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
+        glm::mat4 mvp = proj * view * model;
+
+        {
+            ImGui::SliderFloat3("Translate", &translation.x, 0.0f, 960.0f);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        }
+
+        shader.SetUniformMat4f("u_MVP", mvp);
 
         if ( r < 0.0f )
             increment = 0.05f;
@@ -107,6 +131,9 @@ int main(void)
 
         renderer.Draw(va, ib, shader);
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
@@ -114,6 +141,10 @@ int main(void)
         glfwPollEvents();
     }
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwTerminate();
     return 0;
