@@ -8,6 +8,7 @@
 #include <imgui_impl_opengl3.h>
 #include "tests/testtexture2d.h"
 #include "tests/testclearcolor.h"
+#include "tests/testobjloader.h"
 
 const char* glsl_version = "#version 130";
 
@@ -59,6 +60,7 @@ int main(void)
 
     testMenu->RegisterTest<test::TestClearColor>("Clear Color");
     testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
+    testMenu->RegisterTest<test::TestObjLoader>("Obj Viewer");
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
