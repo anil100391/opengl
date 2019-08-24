@@ -7,8 +7,8 @@
 Shader::Shader(const std::string& filepath)
     : _filePath(filepath)
 {
-    ShaderProgramSource source = ParseShader(filepath);
-    _rendererID = CreateShader(source.VertexSource, source.FragmentSource);
+    auto[vertexSource, fragmentSource] = ParseShader(filepath);
+    _rendererID = CreateShader(vertexSource, fragmentSource);
 }
 
 // -----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ int Shader::GetUniformLocation(const std::string& name)
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-ShaderProgramSource Shader::ParseShader(const std::string& filepath)
+std::tuple<std::string, std::string> Shader::ParseShader(const std::string& filepath)
 {
     std::ifstream stream(filepath);
 

@@ -26,15 +26,15 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
+    // Create a windowed mode window and its OpenGL context
+    window = glfwCreateWindow(960, 540, "Hello World", nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();
         return -1;
     }
 
-    /* Make the window's context current */
+    // Make the window's context current
     glfwMakeContextCurrent(window);
 
     glfwSwapInterval(1);
@@ -46,7 +46,6 @@ int main(void)
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    {
     Renderer renderer;
 
     ImGui::CreateContext();
@@ -62,10 +61,10 @@ int main(void)
     testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
     testMenu->RegisterTest<test::TestObjLoader>("Obj Viewer");
 
-    /* Loop until the user closes the window */
+    // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
+        // Render here
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         renderer.Clear();
 
@@ -95,10 +94,10 @@ int main(void)
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        /* Swap front and back buffers */
+        // Swap front and back buffers
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */
+        // Poll for and process events
         glfwPollEvents();
     }
 
@@ -106,7 +105,6 @@ int main(void)
     if ( testMenu != currentTest )
     {
         delete testMenu;
-    }
     }
 
     ImGui_ImplOpenGL3_Shutdown();
