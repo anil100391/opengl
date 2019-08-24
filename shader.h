@@ -4,17 +4,10 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <tuple>
 #include <unordered_map>
 
 #include <glm/glm.hpp>
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-struct ShaderProgramSource
-{
-    std::string VertexSource;
-    std::string FragmentSource;
-};
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -36,7 +29,7 @@ public:
 
 private:
 
-    ShaderProgramSource ParseShader(const std::string& filepath);
+    std::tuple<std::string, std::string> ParseShader(const std::string& filepath);
     unsigned int CompileShader(unsigned int type, const std::string& source);
     unsigned int CreateShader( const std::string& vertexShader,
                                const std::string& fragmentShader );
