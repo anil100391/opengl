@@ -9,6 +9,7 @@
 #include "tests/testtexture2d.h"
 #include "tests/testclearcolor.h"
 #include "tests/testobjloader.h"
+#include "tests/testfragmentshader.h"
 
 const char* glsl_version = "#version 130";
 
@@ -60,6 +61,7 @@ int main(void)
     testMenu->RegisterTest<test::TestClearColor>("Clear Color");
     testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
     testMenu->RegisterTest<test::TestObjLoader>("Obj Viewer");
+    testMenu->RegisterTest<test::TestFragmentShader>("FragmentShader");
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window))
