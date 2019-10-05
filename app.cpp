@@ -1,119 +1,119 @@
 #include "renderer.h"
 
-#include <iostream>
-#include <string>
+#include "app.h"
 
+#include "tests/testclearcolor.h"
+#include "tests/testfragmentshader.h"
+#include "tests/testobjloader.h"
+#include "tests/testtexture2d.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-#include "tests/testtexture2d.h"
-#include "tests/testclearcolor.h"
-#include "tests/testobjloader.h"
-#include "tests/testfragmentshader.h"
-
-const char* glsl_version = "#version 130";
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-int main(void)
+const char *glsl_version = "#version 130";
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+class TestsApplication : public Application
 {
-    GLFWwindow* window;
+public:
+    TestsApplication();
+    ~TestsApplication();
 
-    /* Initialize the library */
-    if (!glfwInit())
-        return -1;
+    virtual void Update() override;
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(960, 540, "Hello World", nullptr, nullptr);
-    if (!window)
+    static bool KeyHandler( Event &evt )
     {
-        glfwTerminate();
-        return -1;
+        std::cout << evt << std::endl;
+        return true;
     }
 
-    // Make the window's context current
-    glfwMakeContextCurrent(window);
+private:
+    test::Test *    _currentTest = nullptr;
+    test::TestMenu *_testMenu    = nullptr;
+};
 
-    glfwSwapInterval(1);
-
-    if ( GLEW_OK == glewInit() )
-        std::cout << glGetString(GL_VERSION) << std::endl;
-    else
-        return 0;
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    Renderer renderer;
-
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+TestsApplication::TestsApplication() : Application()
+{
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplGlfw_InitForOpenGL( _window, true );
+    ImGui_ImplOpenGL3_Init( glsl_version );
 
-    test::Test* currentTest = nullptr;
-    test::TestMenu *testMenu = new test::TestMenu(currentTest);
-    currentTest = testMenu;
+    _testMenu    = new test::TestMenu( _currentTest );
+    _currentTest = _testMenu;
 
-    testMenu->RegisterTest<test::TestClearColor>("Clear Color");
-    testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
-    testMenu->RegisterTest<test::TestObjLoader>("Obj Viewer");
-    testMenu->RegisterTest<test::TestFragmentShader>("FragmentShader");
+    _testMenu->RegisterTest<test::TestClearColor>( "Clear Color" );
+    _testMenu->RegisterTest<test::TestTexture2D>( "2D Texture" );
+    _testMenu->RegisterTest<test::TestObjLoader>( "Obj Viewer" );
+    _testMenu->RegisterTest<test::TestFragmentShader>( "FragmentShader" );
+}
 
-    // Loop until the user closes the window
-    while (!glfwWindowShouldClose(window))
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+TestsApplication::~TestsApplication()
+{
+    delete _currentTest;
+    if ( _testMenu != _currentTest )
     {
-        // Render here
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        renderer.Clear();
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        {
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        }
-
-        if ( currentTest )
-        {
-            currentTest->OnUpdate(0.0f);
-            currentTest->OnRender();
-            ImGui::Begin("Test");
-            if ( currentTest != testMenu && ImGui::Button("< ") )
-            {
-                delete currentTest;
-                currentTest = testMenu;
-            }
-            currentTest->OnImGuiRender();
-            ImGui::End();
-        }
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        // Swap front and back buffers
-        glfwSwapBuffers(window);
-
-        // Poll for and process events
-        glfwPollEvents();
-    }
-
-    delete currentTest;
-    if ( testMenu != currentTest )
-    {
-        delete testMenu;
+        delete _testMenu;
     }
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+}
 
-    glfwTerminate();
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestsApplication::Update()
+{
+    Renderer renderer;
+    glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+    renderer.Clear();
+
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    {
+        ImGui::Text( "Application average %.3f ms/frame (%.1f FPS)",
+                     1000.0f / ImGui::GetIO().Framerate,
+                     ImGui::GetIO().Framerate );
+    }
+
+    if ( _currentTest )
+    {
+        _currentTest->OnUpdate( 0.0f );
+        _currentTest->OnRender();
+        ImGui::Begin( "Test" );
+        if ( _currentTest != _testMenu && ImGui::Button( "< " ) )
+        {
+            delete _currentTest;
+            _currentTest = _testMenu;
+        }
+        _currentTest->OnImGuiRender();
+        ImGui::End();
+    }
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
+
+    Application::Update();
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+int main( int argc, char *argv[] )
+{
+    TestsApplication app;
+    app.SetEventHandler( &TestsApplication::KeyHandler );
+    app.Run();
     return 0;
 }
 
