@@ -116,9 +116,6 @@ Application::Application( const WindowProperties &wprops )
     else
         std::cout << "Error initializing opengl context" << std::endl;
 
-    glEnable( GL_BLEND );
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
     // Callbacks
     glfwSetKeyCallback( _window, KeyCallback );
     glfwSetCursorPosCallback( _window, MouseMoveCallback );

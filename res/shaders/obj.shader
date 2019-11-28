@@ -5,27 +5,27 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 
 uniform mat4 u_MVP;
+uniform mat4 u_MV;
 
-out vec3 vnormal;
+out vec3 viewnormal;
+out vec3 viewposition;
 
 void main()
 {
     gl_Position = u_MVP * vec4(position, 1.0);
-    vnormal = normal;
+    viewnormal = vec3(u_MV * vec4(normal, 0.0));
+    viewposition = vec3(u_MV * vec4(position, 1.0));
 };
 
 #shader fragment
 #version 330 core
 
-layout(location = 0) out vec4 color;
-in vec3 vnormal;
-
-uniform vec4 u_Color;
-uniform sampler2D u_Texture;
+in vec3 viewnormal;
+in vec3 viewposition;
 
 void main()
 {
-    float strength = abs(dot(vnormal, vec3(1.0, 1.0, 0.4)));
-    color = strength * vec4(1.0, 1.0, 0.0, 1.0);
+    float strength = dot(normalize(viewnormal), normalize(viewposition));
+    gl_FragColor = strength * vec4(1.0);
 };
 

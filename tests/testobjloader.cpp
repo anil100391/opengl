@@ -62,7 +62,7 @@ static std::vector<float> ComputeNormals(std::vector<float> &positions, std::vec
 // -----------------------------------------------------------------------------
 TestObjLoader::TestObjLoader()
     : _filename("res/suzanne.obj"),
-      _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))),
+      _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -300.0f))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, 0.0f, 540.0f)),
       _modelLocation(200.0f, 200.0f, 0.0f)
 {
@@ -113,8 +113,8 @@ TestObjLoader::TestObjLoader()
     std::cout << "num trias: " << trias.size() / 3 << "\n";
     std::cout << "num quads: " << quads.size() / 4 << "\n";
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
 
     std::vector<float> normals = ComputeNormals(positions, trias);
     std::vector<float> vertices;
@@ -169,31 +169,21 @@ void TestObjLoader::OnRender()
 {
     Renderer renderer;
     glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     {
         glm::mat4 model = glm::translate(glm::mat4(1.0f), _modelLocation);
         model = glm::rotate(model, _modelRotation, glm::vec3(1.0, 1.0, 1.0));
         model = glm::scale(model, glm::vec3(_modelScale));
         glm::mat4 mvp = _projMat * _viewMat * model;
+        glm::mat4 mv = _viewMat * model;
 
         _shader->SetUniformMat4f("u_MVP", mvp);
+        _shader->SetUniformMat4f("u_MV", mvp);
 
         _shader->Bind();
         renderer.Draw(*_vao, *_ibo, *_shader);
     }
-
-    /*
-    {
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), _translationB);
-        glm::mat4 mvp = _projMat * _viewMat * model;
-
-        _shader->SetUniformMat4f("u_MVP", mvp);
-
-        _shader->Bind();
-        renderer.Draw(*_vao, *_ibo, *_shader);
-    }
-    */
 }
 
 // -----------------------------------------------------------------------------

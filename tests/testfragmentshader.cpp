@@ -23,6 +23,8 @@ TestFragmentShader::TestFragmentShader()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    glDisable(GL_DEPTH_TEST);
+
     _vao = std::make_unique<VertexArray>();
     _vbo = std::make_unique<VertexBuffer>(positions, 4 * 4 * sizeof(float));
 

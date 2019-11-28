@@ -26,7 +26,7 @@ public:
 
     static bool KeyHandler( Event &evt )
     {
-        std::cout << evt << std::endl;
+        // std::cout << evt << std::endl;
         return true;
     }
 
