@@ -4,6 +4,10 @@
 #include <fstream>
 #include <algorithm>
 
+#ifndef M_PI
+#define M_PI 3.14
+#endif
+
 namespace test
 {
 
@@ -18,8 +22,8 @@ static std::vector<float> ComputeNormals(std::vector<float> &positions, std::vec
         float *v0 = &positions[3*trias[3*tria]];
         float *v1 = &positions[3*trias[3*tria + 1]];
         float *v2 = &positions[3*trias[3*tria + 2]];
-        float e0[3] = {v1[0] - v0[0], v1[1] - v0[1], v1[1] - v0[1] };
-        float e1[3] = {v2[0] - v1[0], v2[1] - v1[1], v2[1] - v1[1] };
+        float e0[3] = {v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2] };
+        float e1[3] = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2] };
         float n[3] = { e0[1] * e1[2] - e1[1] * e0[2],
                        e1[0] * e0[2] - e0[0] * e1[2],
                        e0[0] * e1[1] - e1[0] * e0[1] };
