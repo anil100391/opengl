@@ -25,9 +25,43 @@ void main()
 in vec3 viewnormal;
 in vec3 viewposition;
 
+struct Material
+{
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    float shininess;
+};
+
+uniform Material material;
+
+struct PointLight
+{
+    vec3 position;
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+};
+
+uniform PointLight light;
+
 void main()
 {
-    float strength = max(dot(normalize(viewnormal), normalize(-viewposition)), 0.0);
-    gl_FragColor = strength * vec4(1.0);
+    // ambient
+    vec4 ambient = light.ambient * material.ambient;
+
+    // diffuse
+    vec3 lightDir = normalize(light.position - viewposition);
+    float diffuseStrength = max(dot(lightDir, viewnormal), 0.0);
+    vec4 diffuse = diffuseStrength * light.diffuse * material.diffuse;
+
+    // specular
+    vec3 camerapos = vec3(0.0);
+    vec3 viewDir = normalize(camerapos - viewposition);
+    vec3 reflectDir = reflect(-lightDir, viewnormal);
+    float specularStrength = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec4 specular = specularStrength * light.specular * material.specular;
+
+    gl_FragColor = ambient + diffuse + specular;
 };
 

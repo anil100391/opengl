@@ -1,5 +1,6 @@
 #include "testobjloader.h"
 #include "../renderer.h"
+#include "../light.h"
 #include <imgui.h>
 #include <fstream>
 #include <algorithm>
@@ -126,15 +127,6 @@ TestObjLoader::TestObjLoader()
         vertices.push_back(normals[3*ii]);
         vertices.push_back(normals[3*ii+1]);
         vertices.push_back(normals[3*ii+2]);
-
-        /*
-        std::cout << positions[3*ii] << "\t";
-        std::cout << positions[3*ii+1] << "\t";
-        std::cout << positions[3*ii+2] << "\t";
-        std::cout << normals[3*ii] << "\t";
-        std::cout << normals[3*ii+1] << "\t";
-        std::cout << normals[3*ii+2] << "\n";
-        */
     }
 
     _vao = std::make_unique<VertexArray>();
@@ -177,9 +169,33 @@ void TestObjLoader::OnRender()
         model = glm::rotate(model, _modelRotation, glm::vec3(0.0, 0.0, 1.0));
         model = glm::scale(model, glm::vec3(_modelScale));
 
+        // set transformation matrices uniforms
         _shader->SetUniformMat4f("u_M", model);
         _shader->SetUniformMat4f("u_V", _viewMat);
         _shader->SetUniformMat4f("u_P", _projMat);
+
+        // set material uniforms
+        material m { glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
+                     glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // diffuse
+                     glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // specular
+                     32.0f };                           // shininess
+
+        _shader->SetUniform4f("material.ambient", m._ambient);
+        _shader->SetUniform4f("material.diffuse", m._diffuse);
+        _shader->SetUniform4f("material.specular", m._specular);
+        _shader->SetUniform1f("material.shininess", m._shininess);
+
+        // set light uniforms
+        light l { glm::vec3(0.0f, 0.0f, 0.0f),       // position
+                  glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
+                  glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // diffuse
+                  glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // specular
+                };
+
+        _shader->SetUniform3f("light.position", l._position);
+        _shader->SetUniform4f("light.ambient", l._ambient);
+        _shader->SetUniform4f("light.diffuse", l._diffuse);
+        _shader->SetUniform4f("light.specular", l._specular);
 
         _shader->Bind();
         renderer.Draw(*_vao, *_ibo, *_shader);
