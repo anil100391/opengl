@@ -173,13 +173,13 @@ void TestObjLoader::OnRender()
 
     {
         glm::mat4 model = glm::translate(glm::mat4(1.0f), _modelLocation);
-        model = glm::rotate(model, _modelRotation, glm::vec3(1.0, 1.0, 1.0));
+        model = glm::rotate(model, (float)M_PI / 2.0f, glm::vec3(1.0, 0.0, 0.0));
+        model = glm::rotate(model, _modelRotation, glm::vec3(0.0, 0.0, 1.0));
         model = glm::scale(model, glm::vec3(_modelScale));
-        glm::mat4 mvp = _projMat * _viewMat * model;
-        glm::mat4 mv = _viewMat * model;
 
-        _shader->SetUniformMat4f("u_MVP", mvp);
-        _shader->SetUniformMat4f("u_MV", mvp);
+        _shader->SetUniformMat4f("u_M", model);
+        _shader->SetUniformMat4f("u_V", _viewMat);
+        _shader->SetUniformMat4f("u_P", _projMat);
 
         _shader->Bind();
         renderer.Draw(*_vao, *_ibo, *_shader);
