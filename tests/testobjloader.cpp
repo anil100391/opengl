@@ -62,57 +62,16 @@ static std::vector<float> ComputeNormals(std::vector<float> &positions, std::vec
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 TestObjLoader::TestObjLoader()
-    : _filename("res/suzanne.obj"),
+    : _mesh("res/suzanne.obj"),
       _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -300.0f))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, 0.0f, 540.0f)),
       _modelLocation(200.0f, 200.0f, 0.0f)
 {
-    std::vector<float> positions;
-    std::vector<unsigned int> trias;
-    std::vector<unsigned int> quads;
-
-    std::ifstream file(_filename);
-
-    std::string line;
-    char ch[2];
-    float x, y, z;
-    int nodes[4];
-    while (getline(file, line))
-    {
-        if ( line[0] == 'v' )
-        {
-            if ( line[1] != 'n' )
-            {
-                if ( 4 == sscanf(line.c_str(), "%s %f %f %f", ch, &x, &y, &z) )
-                {
-                    positions.push_back(x);
-                    positions.push_back(y);
-                    positions.push_back(z);
-                }
-            }
-        }
-        else if ( line[0] == 'f' )
-        {
-            if ( 5 == sscanf(line.c_str(), "%s %d %d %d %d", ch, &nodes[0], &nodes[1], &nodes[2], &nodes[3]) )
-            {
-                quads.push_back(nodes[0] - 1);
-                quads.push_back(nodes[1] - 1);
-                quads.push_back(nodes[2] - 1);
-                quads.push_back(nodes[3] - 1);
-            }
-            else if ( 4 == sscanf(line.c_str(), "%s %d %d %d", ch, &nodes[0], &nodes[1], &nodes[2]) )
-            {
-                trias.push_back(nodes[0] - 1);
-                trias.push_back(nodes[1] - 1);
-                trias.push_back(nodes[2] - 1);
-            }
-        }
-    }
+    std::vector<float> &positions = _mesh._vertices;
+    std::vector<unsigned int> &trias = _mesh._trias;
+    std::vector<unsigned int> &quad = _mesh._quads;;
 
     std::for_each(positions.begin(), positions.end(), [](float &v) { v*=100.0f; });
-    std::cout << "num vertices: " << positions.size() / 3 << "\n";
-    std::cout << "num trias: " << trias.size() / 3 << "\n";
-    std::cout << "num quads: " << quads.size() / 4 << "\n";
 
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
@@ -121,9 +80,11 @@ TestObjLoader::TestObjLoader()
     std::vector<float> vertices;
     for ( int ii = 0; ii < positions.size() / 3; ++ii )
     {
+        // push positions
         vertices.push_back(positions[3*ii]);
         vertices.push_back(positions[3*ii+1]);
         vertices.push_back(positions[3*ii+2]);
+        // push normals
         vertices.push_back(normals[3*ii]);
         vertices.push_back(normals[3*ii+1]);
         vertices.push_back(normals[3*ii+2]);

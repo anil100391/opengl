@@ -8,6 +8,7 @@
 #include "../indexbuffer.h"
 #include "../shader.h"
 #include "../texture.h"
+#include "../utils/mesh.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -36,7 +37,7 @@ public:
 
 private:
 
-    std::string                     _filename;
+    mesh                            _mesh;
     std::unique_ptr<VertexArray>    _vao;
     std::unique_ptr<VertexBuffer>   _vbo;
     std::unique_ptr<IndexBuffer>    _ibo;
