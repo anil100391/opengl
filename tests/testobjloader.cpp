@@ -1,7 +1,7 @@
 #include "testobjloader.h"
 #include "../renderer.h"
 #include "../light.h"
-#include "../events/event.h"
+#include "../events/mouseevent.h"
 #include <imgui.h>
 #include <fstream>
 #include <algorithm>
@@ -102,6 +102,7 @@ TestObjLoader::TestObjLoader()
     _ibo = std::make_unique<IndexBuffer>(trias.data(), trias.size());
 
     _shader = std::make_unique<Shader>("res/shaders/obj.shader");
+    _selectShader = std::make_unique<Shader>("res/shaders/select.shader");
     _shader->Bind();
 }
 
@@ -177,7 +178,54 @@ void TestObjLoader::OnImGuiRender()
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnEvent( Event &evt )
 {
-    std::cout << evt << "\n";
+    if ( evt.GetEventType() == EventType::MouseButtonPressed )
+    {
+        auto& mouseEvt = static_cast<MouseEvent&>(evt);
+        Select(mouseEvt.X(), mouseEvt.Y());
+        std::cout << evt << "\n";
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestObjLoader::Select( int x, int y )
+{
+    // draw using selection shader
+    {
+        Renderer renderer;
+        glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), _modelLocation);
+        model = glm::rotate(model, (float)M_PI / 2.0f, glm::vec3(1.0, 0.0, 0.0));
+        model = glm::rotate(model, _modelRotation, glm::vec3(0.0, 0.0, 1.0));
+        model = glm::scale(model, glm::vec3(_modelScale));
+        glm::mat4 mvp = _projMat * _viewMat * model;
+
+        // set transformation matrices uniforms
+        _selectShader->SetUniformMat4f("u_MVP", mvp);
+
+        _selectShader->SetUniform4f("u_Color", glm::vec4(1.0, 1.0, 1.0, 1.0));
+        _selectShader->Bind();
+        renderer.Draw(*_vao, *_ibo, *_selectShader);
+    }
+
+    // process select draw
+    GLbyte res[4];
+    GLint         viewport[4];
+
+    glGetIntegerv( GL_VIEWPORT, viewport );
+    std::cout << "viewport : " << viewport[3] - y << std::endl;
+    glReadPixels( x, viewport[3] - y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, res );
+    printf( "pick data : %d %d %d %d\n", res[0], res[1], res[2], res[3] );
+    switch ( res[0] )
+    {
+    case 0:
+        std::cout << "Nothing Picked\n";
+        break;
+    default:
+        std::cout << "Suzanne Picked\n";
+    }
 }
 
 }

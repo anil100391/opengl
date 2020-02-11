@@ -38,11 +38,14 @@ public:
 
 private:
 
+    void         Select(int x, int y);
+
     mesh                            _mesh;
     std::unique_ptr<VertexArray>    _vao;
     std::unique_ptr<VertexBuffer>   _vbo;
     std::unique_ptr<IndexBuffer>    _ibo;
     std::unique_ptr<Shader>         _shader;
+    std::unique_ptr<Shader>         _selectShader;
 
     glm::mat4                       _viewMat;
     glm::mat4                       _projMat;
