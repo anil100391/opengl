@@ -34,6 +34,7 @@ public:
     virtual void OnUpdate(float deltaTime) override;
     virtual void OnRender() override;
     virtual void OnImGuiRender() override;
+    virtual void OnEvent(Event &evt) override;
 
 private:
 

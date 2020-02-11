@@ -1,6 +1,7 @@
 #include "testobjloader.h"
 #include "../renderer.h"
 #include "../light.h"
+#include "../events/event.h"
 #include <imgui.h>
 #include <fstream>
 #include <algorithm>
@@ -170,6 +171,13 @@ void TestObjLoader::OnImGuiRender()
     ImGui::SliderFloat("Rotation", &_modelRotation, 0.0, 2 * M_PI);
     ImGui::SliderFloat("Scale", &_modelScale, 1.0, 4.0f);
     ImGui::SliderFloat3("Location", &_modelLocation.x, 0.0, 960.0f);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestObjLoader::OnEvent( Event &evt )
+{
+    std::cout << evt << "\n";
 }
 
 }

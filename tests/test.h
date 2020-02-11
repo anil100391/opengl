@@ -7,6 +7,10 @@
 #include <iostream>
 #include <functional>
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+class Event;
+
 namespace test
 {
 
@@ -22,6 +26,7 @@ public:
     virtual void OnUpdate(float deltaTime) {}
     virtual void OnRender() {}
     virtual void OnImGuiRender() {}
+    virtual void OnEvent(Event &evt) {}
 };
 
 class TestMenu : public Test

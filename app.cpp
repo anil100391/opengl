@@ -24,9 +24,13 @@ public:
 
     virtual void Update() override;
 
-    static bool KeyHandler( Event &evt )
+    virtual bool OnEvent( Event &evt ) override
     {
-        // std::cout << evt << std::endl;
+        if ( _currentTest )
+        {
+            _currentTest->OnEvent( evt );
+        }
+
         return true;
     }
 
@@ -112,7 +116,6 @@ void TestsApplication::Update()
 int main( int argc, char *argv[] )
 {
     TestsApplication app;
-    app.SetEventHandler( &TestsApplication::KeyHandler );
     app.Run();
     return 0;
 }

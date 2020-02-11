@@ -48,21 +48,11 @@ public:
         glfwPollEvents();
     }
 
-    void SetEventHandler( std::function<bool( Event &evt )> evtHandler )
-    {
-        _evtHandler = evtHandler;
-    }
-
-    void OnEvent( Event &evt )
-    {
-        if ( _evtHandler )
-            _evtHandler( evt );
-    }
+    virtual bool OnEvent( Event &evt ) { return true; }
 
     bool _terminate = false;
 
 protected:
-    std::function<bool( Event &evt )> _evtHandler;
 
     WindowProperties _windPros;
     GLFWwindow *     _window = nullptr;
