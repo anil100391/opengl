@@ -200,18 +200,24 @@ void TestObjLoader::Select( int x, int y )
         model = glm::rotate(model, (float)M_PI / 2.0f, glm::vec3(1.0, 0.0, 0.0));
         model = glm::rotate(model, _modelRotation, glm::vec3(0.0, 0.0, 1.0));
         model = glm::scale(model, glm::vec3(_modelScale));
-        glm::mat4 mvp = _projMat * _viewMat * model;
 
         // set transformation matrices uniforms
-        _selectShader->SetUniformMat4f("u_MVP", mvp);
+        _selectShader->SetUniformMat4f("u_M", model);
+        _selectShader->SetUniformMat4f("u_V", _viewMat);
+        _selectShader->SetUniformMat4f("u_P", _projMat);
 
         _selectShader->SetUniform4f("u_Color", glm::vec4(1.0, 1.0, 1.0, 1.0));
         _selectShader->Bind();
         renderer.Draw(*_vao, *_ibo, *_selectShader);
     }
 
+    // force all draw commands to finish before calling glReadPixels
+    glFlush();
+    glFinish();
+    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+
     // process select draw
-    GLbyte res[4];
+    unsigned char res[4];
     GLint         viewport[4];
 
     glGetIntegerv( GL_VIEWPORT, viewport );
