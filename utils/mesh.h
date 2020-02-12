@@ -31,9 +31,9 @@ struct mesh
 
     void translate(const glm::vec3& dr)
     {
-        _modelMat[3][0] + dr[0];
-        _modelMat[3][1] + dr[1];
-        _modelMat[3][2] + dr[2];
+        _modelMat[3][0] += dr[0];
+        _modelMat[3][1] += dr[1];
+        _modelMat[3][2] += dr[2];
     }
 
 private:
