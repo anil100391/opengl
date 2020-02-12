@@ -66,7 +66,11 @@ TestObjLoader::TestObjLoader()
     : _mesh("res/suzanne.obj"),
       _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -300.0f))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, 0.0f, 540.0f)),
-      _modelLocation(200.0f, 200.0f, 0.0f)
+      _modelLocation(200.0f, 200.0f, 0.0f),
+      _material { glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
+                  glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // diffuse
+                  glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // specular
+                  32.0f }                            // shininess
 {
     std::vector<float> &positions = _mesh._vertices;
     std::vector<unsigned int> &trias = _mesh._trias;
@@ -138,10 +142,7 @@ void TestObjLoader::OnRender()
         _shader->SetUniformMat4f("u_P", _projMat);
 
         // set material uniforms
-        material m { glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
-                     glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // diffuse
-                     glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // specular
-                     32.0f };                           // shininess
+        const material& m = GetMaterial();
 
         _shader->SetUniform4f("material.ambient", m._ambient);
         _shader->SetUniform4f("material.diffuse", m._diffuse);
@@ -149,11 +150,7 @@ void TestObjLoader::OnRender()
         _shader->SetUniform1f("material.shininess", m._shininess);
 
         // set light uniforms
-        light l { glm::vec3(0.0f, 0.0f, 0.0f),       // position
-                  glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
-                  glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // diffuse
-                  glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // specular
-                };
+        light l = GetLight();
 
         _shader->SetUniform3f("light.position", l._position);
         _shader->SetUniform4f("light.ambient", l._ambient);
@@ -224,14 +221,41 @@ void TestObjLoader::Select( int x, int y )
     std::cout << "viewport : " << viewport[3] - y << std::endl;
     glReadPixels( x, viewport[3] - y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, res );
     printf( "pick data : %d %d %d %d\n", res[0], res[1], res[2], res[3] );
-    switch ( res[0] )
+    bool selected = (res[0] != 0);
+    if ( selected )
     {
-    case 0:
-        std::cout << "Nothing Picked\n";
-        break;
-    default:
-        std::cout << "Suzanne Picked\n";
+        material m = GetMaterial();
+        float r = (1.0f * rand()) / RAND_MAX;
+        float g = (1.0f * rand()) / RAND_MAX;
+        float b = (1.0f * rand()) / RAND_MAX;
+        m._diffuse = glm::vec4(r, g, b, 1.0f);
+        SetMaterial(m);
     }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+const material& TestObjLoader::GetMaterial() const
+{
+    return _material;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestObjLoader::SetMaterial(const material& m)
+{
+    _material = m;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+light TestObjLoader::GetLight() const
+{
+    return { glm::vec3(0.0f, 0.0f, 0.0f),       // position
+             glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
+             glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // diffuse
+             glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // specular
+           };
 }
 
 }

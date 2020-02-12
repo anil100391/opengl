@@ -9,6 +9,7 @@
 #include "../shader.h"
 #include "../texture.h"
 #include "../utils/mesh.h"
+#include "../light.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -40,6 +41,10 @@ private:
 
     void         Select(int x, int y);
 
+    const material& GetMaterial() const;
+    void            SetMaterial(const material& m);
+    light           GetLight() const;
+
     mesh                            _mesh;
     std::unique_ptr<VertexArray>    _vao;
     std::unique_ptr<VertexBuffer>   _vbo;
@@ -52,6 +57,8 @@ private:
     glm::vec3                       _modelLocation;
     float                           _modelRotation = 0.0f;
     float                           _modelScale = 1.0f;
+
+    material                        _material;
 };
 
 }
