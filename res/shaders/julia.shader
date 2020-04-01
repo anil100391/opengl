@@ -18,25 +18,26 @@ void main()
 
 uniform sampler1D u_Texture;
 uniform vec2 u_StartPos;
+uniform float u_AspectRatio;
 in vec2 v_texCoord;
 
 void main()
 {
-    vec2 center = vec2(1.5, 1.5);
+    vec2 center = vec2(1.5 * u_AspectRatio, 1.5);
     float scale = 3.0;
     int iter = 100;
 
 /*
     This variant also generates interesting results
     vec2 c = vec2(0.0, 0.0);
-    c.x = v_texCoord.x * scale - center.x;
+    c.x = v_texCoord.x * scale * u_AspectRatio - center.x;
     c.y = v_texCoord.y * scale - center.y;
 
     int i = 0;
     vec2 z = u_StartPos;
 */
     vec2 z = vec2(0.0, 0.0);
-    z.x = v_texCoord.x * scale - center.x;
+    z.x = v_texCoord.x * scale * u_AspectRatio - center.x;
     z.y = v_texCoord.y * scale - center.y;
 
     int i = 0;

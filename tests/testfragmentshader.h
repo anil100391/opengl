@@ -7,6 +7,7 @@
 #include "../vertexbuffer.h"
 #include "../indexbuffer.h"
 #include "../shader.h"
+#include "../events/event.h"
 
 #include <memory>
 
@@ -25,8 +26,11 @@ public:
     void OnUpdate(float deltaTime) override;
     void OnRender() override;
     void OnImGuiRender() override;
+    virtual void OnEvent(Event &evt) override;
 
 private:
+
+    void Draw();
 
     std::unique_ptr<VertexArray>    _vao;
     std::unique_ptr<VertexBuffer>   _vbo;
@@ -35,6 +39,8 @@ private:
 
     float                           _startX;
     float                           _startY;
+    int                             _windowWidth  = 960;
+    int                             _windowHeight = 540;
 };
 
 }

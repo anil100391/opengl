@@ -8,6 +8,7 @@
 
 #include "events/keyevent.h"
 #include "events/mouseevent.h"
+#include "events/windowevent.h"
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -72,6 +73,9 @@ private:
                                      int         button,
                                      int         action,
                                      int         mods );
+
+    // assuming framebuffer and window size to be same
+    static void WindowResizeCallback(GLFWwindow *window, int width, int height);
 };
 
 // -----------------------------------------------------------------------------
@@ -110,6 +114,7 @@ Application::Application( const WindowProperties &wprops )
     glfwSetKeyCallback( _window, KeyCallback );
     glfwSetCursorPosCallback( _window, MouseMoveCallback );
     glfwSetMouseButtonCallback( _window, MouseButtonCallback );
+    glfwSetFramebufferSizeCallback( _window, WindowResizeCallback );
 }
 
 // -----------------------------------------------------------------------------
@@ -218,6 +223,16 @@ void Application::MouseButtonCallback( GLFWwindow *window,
                                (int)ypos, MouseEvent::Button::MIDDLE );
         app->OnEvent( evt );
     }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void Application::WindowResizeCallback(GLFWwindow *window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+    WindowResizeEvent evt(width, height);
+    auto app = static_cast<Application *>( glfwGetWindowUserPointer( window ) );
+    app->OnEvent(evt);
 }
 
 #endif // _app_h_
