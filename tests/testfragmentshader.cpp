@@ -18,10 +18,12 @@ TestFragmentShader::TestFragmentShader()
       _centerX(1.5f),
       _centerY(1.5f)
 {
+    float w = _windowWidth;
+    float h = _windowHeight;
     float positions[] = { 0.0f, 0.0f, 0.0f, 0.0f,
-                          512.0f, 0.0f, 1.0f, 0.0f,
-                          512.0f,  512.0f, 1.0f, 1.0f,
-                          0.0f,  512.0f, 0.0f, 1.0f };
+                          w,    0.0f, 1.0f, 0.0f,
+                          w,    h,    1.0f, 1.0f,
+                          0.0f, h,    0.0f, 1.0f };
 
     unsigned int indices[] = { 0, 1, 2, 0, 2, 3 };
 
