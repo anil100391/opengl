@@ -139,4 +139,49 @@ private:
     MouseEvent::Button  _button;
 };
 
+class MouseScrollEvent : public MouseEvent
+{
+public:
+    MouseScrollEvent( double xoffset, double yoffset )
+        : MouseEvent( 0, 0 ),
+          _xoffset(xoffset),
+          _yoffset(yoffset)
+    {}
+
+    EventType GetEventType() const override
+    {
+        return EventType::MouseScrolled;
+    }
+
+    static EventType GetStaticEventType()
+    {
+        return EventType::MouseScrolled;
+    }
+
+    const char* GetName() const override
+    {
+        return "MouseScrolledEvent";
+    }
+
+    virtual int GetCategoryFlags() const override
+    {
+        return EC_Mouse | EC_MouseButton | EC_Input;
+    }
+
+    double XOffset() const noexcept
+    {
+        return _xoffset;
+    }
+
+    double YOffset() const noexcept
+    {
+        return _yoffset;
+    }
+
+private:
+
+    double _xoffset;
+    double _yoffset;
+};
+
 #endif // _mouse_event_h_

@@ -19,12 +19,14 @@ void main()
 uniform sampler1D u_Texture;
 uniform vec2 u_StartPos;
 uniform float u_AspectRatio;
+uniform float u_Scale = 3.0;
 in vec2 v_texCoord;
 
 void main()
 {
-    vec2 center = vec2(1.5 * u_AspectRatio, 1.5);
-    float scale = 3.0;
+    float cen = u_Scale / 2.0;
+    vec2 center = vec2(cen * u_AspectRatio, cen);
+    float scale = u_Scale;
     int iter = 100;
 
 /*

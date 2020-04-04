@@ -74,6 +74,10 @@ private:
                                      int         action,
                                      int         mods );
 
+    static void MouseScrollCallback( GLFWwindow *window,
+                                     double xoffset,
+                                     double yoffset );
+
     // assuming framebuffer and window size to be same
     static void WindowResizeCallback(GLFWwindow *window, int width, int height);
 };
@@ -114,6 +118,7 @@ Application::Application( const WindowProperties &wprops )
     glfwSetKeyCallback( _window, KeyCallback );
     glfwSetCursorPosCallback( _window, MouseMoveCallback );
     glfwSetMouseButtonCallback( _window, MouseButtonCallback );
+    glfwSetScrollCallback( _window, MouseScrollCallback );
     glfwSetFramebufferSizeCallback( _window, WindowResizeCallback );
 }
 
@@ -223,6 +228,18 @@ void Application::MouseButtonCallback( GLFWwindow *window,
                                (int)ypos, MouseEvent::Button::MIDDLE );
         app->OnEvent( evt );
     }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void Application::MouseScrollCallback( GLFWwindow *window,
+                                       double xoffset,
+                                       double yoffset )
+{
+    auto app = static_cast<Application *>( glfwGetWindowUserPointer( window ) );
+
+    MouseScrollEvent evt(xoffset, yoffset);
+    app->OnEvent(evt);
 }
 
 // -----------------------------------------------------------------------------

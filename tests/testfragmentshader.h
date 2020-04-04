@@ -37,8 +37,14 @@ private:
     std::unique_ptr<IndexBuffer>    _ibo;
     std::unique_ptr<Shader>         _shader;
 
+    // 2d coordinate params
     float                           _startX;
     float                           _startY;
+    float                           _centerX;
+    float                           _centerY;
+    float                           _size;
+
+    // window dimensions
     int                             _windowWidth  = 960;
     int                             _windowHeight = 540;
 };

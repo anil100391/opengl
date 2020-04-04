@@ -12,8 +12,11 @@ namespace test
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 TestFragmentShader::TestFragmentShader()
-    : _startX(0.354),
-      _startY(0.361)
+    : _startX(0.354f),
+      _startY(0.361f),
+      _size(3.0f),
+      _centerX(1.5f),
+      _centerY(1.5f)
 {
     float positions[] = { 0.0f, 0.0f, 0.0f, 0.0f,
                           512.0f, 0.0f, 1.0f, 0.0f,
@@ -41,6 +44,7 @@ TestFragmentShader::TestFragmentShader()
     _shader->Bind();
 
     _shader->SetUniform2f("u_StartPos", _startX, _startY);
+    _shader->SetUniform1f("u_Scale", _size);
 }
 
 // -----------------------------------------------------------------------------
@@ -76,6 +80,7 @@ void TestFragmentShader::Draw()
         glm::mat4 mvp = projMat * viewMat;
 
         _shader->SetUniform1f("u_AspectRatio", 1.0f * _windowWidth / _windowHeight);
+        _shader->SetUniform1f("u_Scale", _size);
         _shader->SetUniform2f("u_StartPos", _startX, _startY);
         _shader->SetUniformMat4f("u_MVP", mvp);
 
@@ -105,9 +110,14 @@ void TestFragmentShader::OnEvent(Event &evt)
         case EventType::MouseButtonReleased:
         {
             auto& mouseEvt = static_cast<MouseEvent&>(evt);
-            _startX = 3.0f * mouseEvt.X() / _windowWidth - 1.5f;
-            _startY = 3.0f * mouseEvt.Y() / _windowHeight - 1.5f;
-            Draw();
+            _startX = _size * mouseEvt.X() / _windowWidth - 1.5f;
+            _startY = _size * mouseEvt.Y() / _windowHeight - 1.5f;
+            break;
+        }
+        case EventType::MouseScrolled:
+        {
+            auto& mouseEvt = static_cast<MouseScrollEvent&>(evt);
+            _size += (0.1 * mouseEvt.YOffset());
             break;
         }
         case EventType::WindowResize:
