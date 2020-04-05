@@ -116,7 +116,7 @@ void TestFragmentShader::OnEvent(Event &evt)
             float minCornerX = _centerX - 0.5 * spanX;
             float minCornerY = _centerY - 0.5 * spanY;
             _mouseX = minCornerX + (spanX * mouseEvt.X()) / _windowWidth;
-            _mouseY = minCornerY + (spanY * mouseEvt.Y()) / _windowHeight;
+            _mouseY = minCornerY + (spanY * (_windowHeight - mouseEvt.Y())) / _windowHeight;
             break;
         }
         case EventType::MouseScrolled:
@@ -124,7 +124,7 @@ void TestFragmentShader::OnEvent(Event &evt)
             auto& mouseEvt = static_cast<MouseScrollEvent&>(evt);
             float oldSize = _spanY;
             _spanY += (0.1 * mouseEvt.YOffset());
-            if ( _spanY < 0.01f )
+            if ( _spanY < 0.001f )
             {
                 _spanY = oldSize;
                 return;
@@ -137,8 +137,9 @@ void TestFragmentShader::OnEvent(Event &evt)
             // coord of center wrt mouse pos
             float localCenterX = _centerX - _mouseX;
             float localCenterY = _centerY - _mouseY;
-            _centerX = _mouseX + localCenterX / scale;
-            _centerY = _mouseY + localCenterY / scale;
+            _centerX = _mouseX + localCenterX * scale;
+            _centerY = _mouseY + localCenterY * scale;
+
             break;
         }
         case EventType::WindowResize:
