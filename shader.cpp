@@ -130,7 +130,7 @@ std::tuple<std::string, std::string> Shader::ParseShader(const std::string& file
             if ( line.find("fragment") != std::string::npos )
                 type = ShaderType::FRAGMENT;
         }
-        else
+        else if ( type == ShaderType::VERTEX || type == ShaderType::FRAGMENT )
         {
             ss[(int)type] << line << "\n";
         }

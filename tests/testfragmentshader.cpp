@@ -12,11 +12,11 @@ namespace test
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 TestFragmentShader::TestFragmentShader()
-    : _startX(0.354f),
-      _startY(0.361f),
-      _size(3.0f),
-      _centerX(1.5f),
-      _centerY(1.5f)
+    : _mouseX(0.354f),
+      _mouseY(0.361f),
+      _spanY(3.0f),
+      _centerX(0.0f),
+      _centerY(0.0f)
 {
     float w = _windowWidth;
     float h = _windowHeight;
@@ -44,9 +44,6 @@ TestFragmentShader::TestFragmentShader()
 
     _shader = std::make_unique<Shader>("res/shaders/julia.shader");
     _shader->Bind();
-
-    _shader->SetUniform2f("u_StartPos", _startX, _startY);
-    _shader->SetUniform1f("u_Scale", _size);
 }
 
 // -----------------------------------------------------------------------------
@@ -82,8 +79,9 @@ void TestFragmentShader::Draw()
         glm::mat4 mvp = projMat * viewMat;
 
         _shader->SetUniform1f("u_AspectRatio", 1.0f * _windowWidth / _windowHeight);
-        _shader->SetUniform1f("u_Scale", _size);
-        _shader->SetUniform2f("u_StartPos", _startX, _startY);
+        _shader->SetUniform1f("u_SpanY", _spanY);
+        _shader->SetUniform2f("u_C0", _mouseX, _mouseY);
+        _shader->SetUniform2f("u_Center", _centerX, _centerY);
         _shader->SetUniformMat4f("u_MVP", mvp);
 
         _shader->Bind();
@@ -95,8 +93,8 @@ void TestFragmentShader::Draw()
 // -----------------------------------------------------------------------------
 void TestFragmentShader::OnImGuiRender()
 {
-    ImGui::SliderFloat("startx", &_startX, -1.5f, 1.5f);
-    ImGui::SliderFloat("starty", &_startY, -1.5f, 1.5f);
+    ImGui::SliderFloat("startx", &_mouseX, -1.5f, 1.5f);
+    ImGui::SliderFloat("starty", &_mouseY, -1.5f, 1.5f);
 }
 
 // -----------------------------------------------------------------------------
@@ -112,14 +110,35 @@ void TestFragmentShader::OnEvent(Event &evt)
         case EventType::MouseButtonReleased:
         {
             auto& mouseEvt = static_cast<MouseEvent&>(evt);
-            _startX = _size * mouseEvt.X() / _windowWidth - 1.5f;
-            _startY = _size * mouseEvt.Y() / _windowHeight - 1.5f;
+            float ar = 1.0f * _windowWidth / _windowHeight;
+            float spanX = _spanY * ar;
+            float spanY = _spanY;
+            float minCornerX = _centerX - 0.5 * spanX;
+            float minCornerY = _centerY - 0.5 * spanY;
+            _mouseX = minCornerX + (spanX * mouseEvt.X()) / _windowWidth;
+            _mouseY = minCornerY + (spanY * mouseEvt.Y()) / _windowHeight;
             break;
         }
         case EventType::MouseScrolled:
         {
             auto& mouseEvt = static_cast<MouseScrollEvent&>(evt);
-            _size += (0.1 * mouseEvt.YOffset());
+            float oldSize = _spanY;
+            _spanY += (0.1 * mouseEvt.YOffset());
+            if ( _spanY < 0.01f )
+            {
+                _spanY = oldSize;
+                return;
+            }
+
+            float newSize = _spanY;
+            float scale = newSize / oldSize;
+            // recompute center so that it gives the illusion that zoomin/out
+            // happened at mouse pos location
+            // coord of center wrt mouse pos
+            float localCenterX = _centerX - _mouseX;
+            float localCenterY = _centerY - _mouseY;
+            _centerX = _mouseX + localCenterX / scale;
+            _centerY = _mouseY + localCenterY / scale;
             break;
         }
         case EventType::WindowResize:

@@ -38,11 +38,11 @@ private:
     std::unique_ptr<Shader>         _shader;
 
     // 2d coordinate params
-    float                           _startX;
-    float                           _startY;
+    float                           _mouseX;
+    float                           _mouseY;
     float                           _centerX;
     float                           _centerY;
-    float                           _size;
+    float                           _spanY;
 
     // window dimensions
     int                             _windowWidth  = 960;
