@@ -47,6 +47,9 @@ private:
     // window dimensions
     int                             _windowWidth  = 960;
     int                             _windowHeight = 540;
+
+    // fractal mode... julia ... mandelbrot
+    int                             _mode = 0;
 };
 
 }

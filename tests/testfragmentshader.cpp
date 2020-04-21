@@ -83,6 +83,7 @@ void TestFragmentShader::Draw()
         _shader->SetUniform2f("u_C0", _mouseX, _mouseY);
         _shader->SetUniform2f("u_Center", _centerX, _centerY);
         _shader->SetUniformMat4f("u_MVP", mvp);
+        _shader->SetUniform1i("u_Mode", _mode);
 
         _shader->Bind();
         renderer.Draw(*_vao, *_ibo, *_shader);
@@ -93,8 +94,10 @@ void TestFragmentShader::Draw()
 // -----------------------------------------------------------------------------
 void TestFragmentShader::OnImGuiRender()
 {
-    ImGui::SliderFloat("startx", &_mouseX, -1.5f, 1.5f);
-    ImGui::SliderFloat("starty", &_mouseY, -1.5f, 1.5f);
+    // ImGui::SliderFloat("startx", &_mouseX, -1.5f, 1.5f);
+    // ImGui::SliderFloat("starty", &_mouseY, -1.5f, 1.5f);
+    ImGui::RadioButton("julia", &_mode, 0); ImGui::SameLine();
+    ImGui::RadioButton("mandelbrot", &_mode, 1); ImGui::SameLine();
 }
 
 // -----------------------------------------------------------------------------
