@@ -7,8 +7,9 @@ namespace test
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestTexture2D::TestTexture2D()
-    : _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))),
+TestTexture2D::TestTexture2D(Application *app)
+    : Test(app),
+      _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f)),
       _translationA(glm::vec3(200.0f, 200.0, 0.0f)),
       _translationB(glm::vec3(400.0f, 200.0, 0.0f))

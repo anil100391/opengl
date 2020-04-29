@@ -10,6 +10,7 @@
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 class Event;
+class Application;
 
 namespace test
 {
@@ -20,20 +21,23 @@ class Test
 {
 public:
 
-    Test() {}
+    Test(Application *app) : _app(app) {}
     virtual ~Test() {}
 
     virtual void OnUpdate(float deltaTime) {}
     virtual void OnRender() {}
     virtual void OnImGuiRender() {}
     virtual void OnEvent(Event &evt) {}
+protected:
+
+    Application *_app = nullptr;
 };
 
 class TestMenu : public Test
 {
 public:
 
-    TestMenu(Test*& currentTest);
+    TestMenu(Application *app, Test*& currentTest);
     ~TestMenu();
 
     virtual void OnImGuiRender() override;
@@ -42,7 +46,7 @@ public:
     void RegisterTest(const std::string& name)
     {
         std::cout << "Restering test\n";
-        _tests.push_back(std::make_pair(name, [](){ return new T(); }));
+        _tests.push_back(std::make_pair(name, [this](){ return new T(_app); }));
     }
 
 private:

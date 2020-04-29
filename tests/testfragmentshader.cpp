@@ -11,13 +11,15 @@ namespace test
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestFragmentShader::TestFragmentShader()
-    : _mouseX(0.354f),
+TestFragmentShader::TestFragmentShader(Application *app)
+    : Test(app),
+      _mouseX(0.354f),
       _mouseY(0.361f),
       _spanY(3.0f),
       _centerX(0.0f),
       _centerY(0.0f)
 {
+    // _app->GetWindowSize(_windowWidth, _windowHeight);
     float w = _windowWidth;
     float h = _windowHeight;
     float positions[] = { 0.0f, 0.0f, 0.0f, 0.0f,

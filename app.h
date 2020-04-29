@@ -49,6 +49,11 @@ public:
         glfwPollEvents();
     }
 
+    void GetWindowSize(int &width, int &height) const noexcept
+    {
+        glfwGetWindowSize(_window, &width, &height);
+    }
+
     virtual bool OnEvent( Event &evt ) { return true; }
 
     bool _terminate = false;

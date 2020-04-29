@@ -23,7 +23,7 @@ class TestTexture2D : public Test
 {
 public:
 
-    TestTexture2D();
+    TestTexture2D(Application *app);
     ~TestTexture2D();
 
     void OnUpdate(float deltaTime) override;

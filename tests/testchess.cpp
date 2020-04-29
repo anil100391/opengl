@@ -9,8 +9,9 @@ namespace test
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestChess::TestChess()
-    : _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))),
+TestChess::TestChess(Application *app)
+    : Test(app),
+      _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f))
 {
     float cellCoords[] = { 0.0f, 0.0f,

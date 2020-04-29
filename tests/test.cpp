@@ -6,8 +6,9 @@ namespace test
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestMenu::TestMenu(Test*& currentTest)
-    : _currentTest(currentTest)
+TestMenu::TestMenu(Application *app, Test*& currentTest)
+    : Test(app),
+      _currentTest(currentTest)
 {
 }
 

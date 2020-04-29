@@ -7,7 +7,8 @@ namespace test
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestClearColor::TestClearColor()
+TestClearColor::TestClearColor(Application *app)
+    : Test(app)
 {
 }
 

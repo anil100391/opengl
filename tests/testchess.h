@@ -21,7 +21,7 @@ class TestChess : public Test
 {
 public:
 
-    TestChess();
+    TestChess(Application *app);
     virtual ~TestChess();
 
     virtual void OnUpdate(float deltaTime) override {}

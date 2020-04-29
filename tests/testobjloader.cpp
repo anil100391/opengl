@@ -62,8 +62,9 @@ static std::vector<float> ComputeNormals(std::vector<float> &positions, std::vec
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestObjLoader::TestObjLoader()
-    : _mesh("res/suzanne.obj"),
+TestObjLoader::TestObjLoader(Application *app)
+    : Test(app),
+      _mesh("res/suzanne.obj"),
       _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -300.0f))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, 0.0f, 540.0f)),
       _modelLocation(200.0f, 200.0f, 0.0f),

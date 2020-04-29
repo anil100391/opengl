@@ -12,7 +12,7 @@ class TestClearColor : public Test
 {
 public:
 
-    TestClearColor();
+    TestClearColor(Application *app);
     ~TestClearColor();
 
     void OnUpdate(float deltaTime) override;

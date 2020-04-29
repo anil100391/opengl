@@ -29,7 +29,7 @@ class TestObjLoader : public Test
 {
 public:
 
-    TestObjLoader();
+    TestObjLoader(Application *app);
     virtual ~TestObjLoader();
 
     virtual void OnUpdate(float deltaTime) override;

@@ -20,7 +20,7 @@ class TestFragmentShader: public Test
 {
 public:
 
-    TestFragmentShader();
+    TestFragmentShader(Application *app);
     ~TestFragmentShader();
 
     void OnUpdate(float deltaTime) override;

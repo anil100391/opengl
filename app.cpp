@@ -49,7 +49,7 @@ TestsApplication::TestsApplication() : Application()
     ImGui_ImplGlfw_InitForOpenGL( _window, true );
     ImGui_ImplOpenGL3_Init( glsl_version );
 
-    _testMenu    = new test::TestMenu( _currentTest );
+    _testMenu    = new test::TestMenu( this, _currentTest );
     _currentTest = _testMenu;
 
     _testMenu->RegisterTest<test::TestClearColor>( "Clear Color" );
