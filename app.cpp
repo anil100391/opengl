@@ -1,124 +1,218 @@
-#include "renderer.h"
-
 #include "app.h"
 
-#include "tests/testclearcolor.h"
-#include "tests/testfragmentshader.h"
-#include "tests/testobjloader.h"
-#include "tests/testtexture2d.h"
-#include "tests/testchess.h"
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <iostream>
+#include <string>
+
+#include "events/keyevent.h"
+#include "events/mouseevent.h"
+#include "events/windowevent.h"
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-const char *glsl_version = "#version 130";
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-class TestsApplication : public Application
+void KeyCallback( GLFWwindow *window,
+                  int         key,
+                  int         scancode,
+                  int         action,
+                  int         mods )
 {
-public:
-    TestsApplication();
-    ~TestsApplication();
-
-    virtual void Update() override;
-
-    virtual bool OnEvent( Event &evt ) override
+    auto app = static_cast<Application *>( glfwGetWindowUserPointer( window ) );
+    if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
     {
-        if ( _currentTest )
-        {
-            _currentTest->OnEvent( evt );
-        }
-
-        return true;
+        glfwSetWindowShouldClose( window, GLFW_TRUE );
+        app->_terminate = true;
     }
 
-private:
-    test::Test *    _currentTest = nullptr;
-    test::TestMenu *_testMenu    = nullptr;
-};
+    static unsigned int repeatcnt = 0;
 
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-TestsApplication::TestsApplication() : Application()
-{
-    ImGui::CreateContext();
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL( _window, true );
-    ImGui_ImplOpenGL3_Init( glsl_version );
-
-    _testMenu    = new test::TestMenu( this, _currentTest );
-    _currentTest = _testMenu;
-
-    _testMenu->RegisterTest<test::TestClearColor>( "Clear Color" );
-    _testMenu->RegisterTest<test::TestTexture2D>( "2D Texture" );
-    _testMenu->RegisterTest<test::TestObjLoader>( "Obj Viewer" );
-    _testMenu->RegisterTest<test::TestFragmentShader>( "FragmentShader" );
-    _testMenu->RegisterTest<test::TestChess>( "Chess" );
+    if ( action == GLFW_PRESS )
+    {
+        repeatcnt = 0;
+        KeyPressedEvent evt( key, 0 );
+        app->OnEvent( evt );
+    }
+    else if ( action == GLFW_RELEASE )
+    {
+        KeyReleasedEvent evt( key );
+        app->OnEvent( evt );
+    }
+    else if ( action == GLFW_REPEAT )
+    {
+        ++repeatcnt;
+        KeyPressedEvent evt( key, repeatcnt );
+        app->OnEvent( evt );
+    }
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestsApplication::~TestsApplication()
+void MouseMoveCallback( GLFWwindow *window,
+                        double      xpos,
+                        double      ypos )
 {
-    delete _currentTest;
-    if ( _testMenu != _currentTest )
-    {
-        delete _testMenu;
-    }
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    auto app = static_cast<Application *>( glfwGetWindowUserPointer( window ) );
+    MouseMoveEvent evt( (int)xpos, (int)ypos );
+    app->OnEvent( evt );
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void TestsApplication::Update()
+void MouseButtonCallback( GLFWwindow *window,
+                          int         button,
+                          int         action,
+                          int         mods )
 {
-    Renderer renderer;
-    glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-    renderer.Clear();
+    auto app = static_cast<Application *>( glfwGetWindowUserPointer( window ) );
 
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    double xpos = 0.0;
+    double ypos = 0.0;
+    glfwGetCursorPos( window, &xpos, &ypos );
 
+    if ( button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS )
     {
-        ImGui::Text( "Application average %.3f ms/frame (%.1f FPS)",
-                     1000.0f / ImGui::GetIO().Framerate,
-                     ImGui::GetIO().Framerate );
+        MousePressedEvent evt( (int)xpos,
+                               (int)ypos, MouseEvent::Button::RIGHT );
+        app->OnEvent( evt );
     }
-
-    if ( _currentTest )
+    else if ( button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE )
     {
-        _currentTest->OnUpdate( 0.0f );
-        _currentTest->OnRender();
-        ImGui::Begin( "Test" );
-        if ( _currentTest != _testMenu && ImGui::Button( "< " ) )
-        {
-            delete _currentTest;
-            _currentTest = _testMenu;
-        }
-        _currentTest->OnImGuiRender();
-        ImGui::End();
+        MouseReleasedEvent evt( (int)xpos,
+                               (int)ypos, MouseEvent::Button::RIGHT );
+        app->OnEvent( evt );
     }
-
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
-
-    Application::Update();
+    else if ( button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS )
+    {
+        MousePressedEvent evt( (int)xpos,
+                               (int)ypos, MouseEvent::Button::LEFT );
+        app->OnEvent( evt );
+    }
+    else if ( button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE )
+    {
+        MouseReleasedEvent evt( (int)xpos,
+                               (int)ypos, MouseEvent::Button::LEFT );
+        app->OnEvent( evt );
+    }
+    else if ( button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS )
+    {
+        MousePressedEvent evt( (int)xpos,
+                               (int)ypos, MouseEvent::Button::MIDDLE );
+        app->OnEvent( evt );
+    }
+    else if ( button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE )
+    {
+        MouseReleasedEvent evt( (int)xpos,
+                               (int)ypos, MouseEvent::Button::MIDDLE );
+        app->OnEvent( evt );
+    }
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-int main( int argc, char *argv[] )
+void MouseScrollCallback( GLFWwindow *window,
+                          double xoffset,
+                          double yoffset )
 {
-    TestsApplication app;
-    app.Run();
-    return 0;
+    auto app = static_cast<Application *>( glfwGetWindowUserPointer( window ) );
+
+    MouseScrollEvent evt(xoffset, yoffset);
+    app->OnEvent(evt);
 }
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void WindowResizeCallback(GLFWwindow *window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+    WindowResizeEvent evt(width, height);
+    auto app = static_cast<Application *>( glfwGetWindowUserPointer( window ) );
+    app->OnEvent(evt);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+WindowProperties::WindowProperties( unsigned int w,
+                                    unsigned int h,
+                                    const char *title )
+    : _width(w),
+      _height(h),
+      _title(title)
+{
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+Application::Application( const WindowProperties &wprops )
+{
+    if ( !glfwInit() )
+        return;
+
+    glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
+    glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+    glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+
+    _window = glfwCreateWindow( wprops._width,
+                                wprops._height,
+                                wprops._title.c_str(),
+                                nullptr,
+                                nullptr );
+
+    if ( !_window )
+    {
+        glfwTerminate();
+        return;
+    }
+
+    glfwSetWindowUserPointer( _window, this );
+    glfwSwapInterval( 1 );
+    glfwMakeContextCurrent( _window );
+
+    if ( GLEW_OK == glewInit() )
+        std::cout << glGetString( GL_VERSION ) << std::endl;
+    else
+        std::cout << "Error initializing opengl context" << std::endl;
+
+    // Callbacks
+    glfwSetKeyCallback( _window, KeyCallback );
+    glfwSetCursorPosCallback( _window, MouseMoveCallback );
+    glfwSetMouseButtonCallback( _window, MouseButtonCallback );
+    glfwSetScrollCallback( _window, MouseScrollCallback );
+    glfwSetFramebufferSizeCallback( _window, WindowResizeCallback );
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+Application::~Application()
+{
+    if ( _window )
+        glfwDestroyWindow( _window );
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void Application::Update()
+{
+    glfwSwapBuffers( _window );
+    glfwPollEvents();
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void Application::GetWindowSize(int &width, int &height) const noexcept
+{
+    glfwGetWindowSize(_window, &width, &height);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+bool Application::OnEvent( Event &evt )
+{
+    return true;
+}
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void Application::Run()
+{
+    while ( !_terminate )
+    {
+        Update();
+    }
+}

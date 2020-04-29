@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "../events/mouseevent.h"
 #include "../events/windowevent.h"
+#include "../app.h"
 
 namespace test
 {
@@ -19,7 +20,7 @@ TestFragmentShader::TestFragmentShader(Application *app)
       _centerX(0.0f),
       _centerY(0.0f)
 {
-    // _app->GetWindowSize(_windowWidth, _windowHeight);
+    _app->GetWindowSize(_windowWidth, _windowHeight);
     float w = _windowWidth;
     float h = _windowHeight;
     float positions[] = { 0.0f, 0.0f, 0.0f, 0.0f,
