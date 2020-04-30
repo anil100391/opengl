@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <fstream>
 #include <algorithm>
+#include "../app.h"
 
 #ifndef M_PI
 #define M_PI 3.141592653589793
@@ -15,74 +16,24 @@ namespace test
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-static std::vector<float> ComputeNormals(std::vector<float> &positions, std::vector<unsigned int> &trias)
-{
-    std::vector<float> normals(positions.size(), 0.0f);
-
-    auto evalTriaNorm = [&normals, &positions, &trias](unsigned int tria)
-    {
-        float *v0 = &positions[3*trias[3*tria]];
-        float *v1 = &positions[3*trias[3*tria + 1]];
-        float *v2 = &positions[3*trias[3*tria + 2]];
-        float e0[3] = {v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2] };
-        float e1[3] = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2] };
-        float n[3] = { e0[1] * e1[2] - e1[1] * e0[2],
-                       e1[0] * e0[2] - e0[0] * e1[2],
-                       e0[0] * e1[1] - e1[0] * e0[1] };
-
-        normals[3*trias[3*tria] + 0] += n[0];
-        normals[3*trias[3*tria] + 1] += n[1];
-        normals[3*trias[3*tria] + 2] += n[2];
-
-        normals[3*trias[3*tria + 1] + 0] += n[0];
-        normals[3*trias[3*tria + 1] + 1] += n[1];
-        normals[3*trias[3*tria + 1] + 2] += n[2];
-
-        normals[3*trias[3*tria + 2] + 0] += n[0];
-        normals[3*trias[3*tria + 2] + 1] += n[1];
-        normals[3*trias[3*tria + 2] + 2] += n[2];
-    };
-
-    for ( int ii = 0; ii < trias.size() / 3; ++ii )
-        evalTriaNorm(ii);
-
-    for ( int ii = 0; ii < normals.size() /3 ; ++ii )
-    {
-        float *nor = &normals[3*ii];
-        float len = std::sqrt(nor[0] * nor[0] + nor[1] * nor[1]  + nor[2] * nor[2]);
-        if ( len > 0 )
-        {
-            nor[0] /= len;
-            nor[1] /= len;
-            nor[2] /= len;
-        }
-    }
-    return normals;
-}
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
 TestObjLoader::TestObjLoader(Application *app)
     : Test(app),
       _mesh("res/suzanne.obj"),
-      _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -300.0f))),
-      _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, 0.0f, 540.0f)),
-      _modelLocation(200.0f, 200.0f, 0.0f),
       _material { glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
                   glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // diffuse
                   glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // specular
                   32.0f }                            // shininess
 {
+    SetUpCamera();
+
     std::vector<float> &positions = _mesh._vertices;
+    std::vector<float> &normals = _mesh._normals;
     std::vector<unsigned int> &trias = _mesh._trias;
     std::vector<unsigned int> &quad = _mesh._quads;;
-
-    std::for_each(positions.begin(), positions.end(), [](float &v) { v*=100.0f; });
 
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 
-    std::vector<float> normals = ComputeNormals(positions, trias);
     std::vector<float> vertices;
     for ( int ii = 0; ii < positions.size() / 3; ++ii )
     {
@@ -132,10 +83,11 @@ void TestObjLoader::OnRender()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     {
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), _modelLocation);
-        model = glm::rotate(model, (float)M_PI / 2.0f, glm::vec3(1.0, 0.0, 0.0));
-        model = glm::rotate(model, _modelRotation, glm::vec3(0.0, 0.0, 1.0));
-        model = glm::scale(model, glm::vec3(_modelScale));
+        glm::mat4 model(1.0f); // identity
+        _viewMat = _camera.GetViewMatrix();
+        int width, height;
+        _app->GetWindowSize(width, height);
+        _projMat = glm::perspective(glm::radians(45.0f), (float) width / (float)height, 0.1f, 100.0f);
 
         // set transformation matrices uniforms
         _shader->SetUniformMat4f("u_M", model);
@@ -167,20 +119,41 @@ void TestObjLoader::OnRender()
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnImGuiRender()
 {
-    ImGui::SliderFloat("Rotation", &_modelRotation, 0.0, 2 * M_PI);
-    ImGui::SliderFloat("Scale", &_modelScale, 1.0, 4.0f);
-    ImGui::SliderFloat3("Location", &_modelLocation.x, 0.0, 960.0f);
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnEvent( Event &evt )
 {
+    auto evtType = evt.GetEventType();
+
+    switch (evtType)
+    {
+        case EventType::MouseMoved:
+        case EventType::MouseButtonPressed:
+        case EventType::MouseButtonReleased:
+            break;
+        case EventType::MouseScrolled:
+        {
+            auto& mouseEvt = static_cast<MouseScrollEvent&>(evt);
+            const auto& lookAt = _camera.GetLookAt();
+            const auto& eye    = _camera.GetPosition();
+            glm::vec3 dir = eye - lookAt;
+            float scale = 0.1f * mouseEvt.YOffset();
+            dir = dir +  dir * scale;
+            _camera.SetPosition(lookAt + dir);
+            break;
+        }
+        case EventType::WindowResize:
+        default: break;
+    }
+
     if ( evt.GetEventType() == EventType::MouseButtonPressed )
     {
         auto& mouseEvt = static_cast<MouseEvent&>(evt);
-        Select(mouseEvt.X(), mouseEvt.Y());
-        std::cout << evt << "\n";
+    }
+    else if( evt.GetEventType() == EventType::MouseScrolled )
+    {
     }
 }
 
@@ -188,6 +161,7 @@ void TestObjLoader::OnEvent( Event &evt )
 // -----------------------------------------------------------------------------
 void TestObjLoader::Select( int x, int y )
 {
+    /*
     // draw using selection shader
     {
         Renderer renderer;
@@ -232,6 +206,7 @@ void TestObjLoader::Select( int x, int y )
         m._diffuse = glm::vec4(r, g, b, 1.0f);
         SetMaterial(m);
     }
+    */
 }
 
 // -----------------------------------------------------------------------------
@@ -252,11 +227,21 @@ void TestObjLoader::SetMaterial(const material& m)
 // -----------------------------------------------------------------------------
 light TestObjLoader::GetLight() const
 {
-    return { glm::vec3(0.0f, 0.0f, 0.0f),       // position
+    const glm::vec3& p = _camera.GetPosition();
+    return { glm::vec3(p[0], p[1], p[2]),       // position
              glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
              glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // diffuse
              glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // specular
            };
 }
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestObjLoader::SetUpCamera() noexcept
+{
+    _camera.SetLookAt(_mesh.cog());
+    const box3& meshBBox = _mesh.bbox();
+    const float* min = meshBBox.min();
+    _camera.SetPosition(glm::vec3(1 * min[0], 1 * min[1], 1 * min[2]) * 5.0f);
+}
 }

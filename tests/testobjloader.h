@@ -10,6 +10,7 @@
 #include "../texture.h"
 #include "../utils/mesh.h"
 #include "../light.h"
+#include "../camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -41,6 +42,8 @@ private:
 
     void         Select(int x, int y);
 
+    void         SetUpCamera() noexcept;
+
     const material& GetMaterial() const;
     void            SetMaterial(const material& m);
     light           GetLight() const;
@@ -54,11 +57,9 @@ private:
 
     glm::mat4                       _viewMat;
     glm::mat4                       _projMat;
-    glm::vec3                       _modelLocation;
-    float                           _modelRotation = 0.0f;
-    float                           _modelScale = 1.0f;
 
     material                        _material;
+    Camera                          _camera;
 };
 
 }

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "bbox.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,25 +20,24 @@ struct mesh
     std::vector<unsigned int>  _trias;
     std::vector<unsigned int>  _quads;
 
-    const glm::mat4& GetTransform()
+    [[nodiscard]] const glm::vec3& cog() const noexcept
     {
-        return _modelMat;
+        return _cog;
     }
 
-    void SetTransform(const glm::mat4& modelmat)
+    [[nodiscard]] const box3& bbox() const noexcept
     {
-        _modelMat = modelmat;
-    }
-
-    void translate(const glm::vec3& dr)
-    {
-        _modelMat[3][0] += dr[0];
-        _modelMat[3][1] += dr[1];
-        _modelMat[3][2] += dr[2];
+        return _bbox;
     }
 
 private:
-    glm::mat4                  _modelMat;
+
+    void ComputeNormals();
+    void ComputeBBox();
+    void ComputeCog();
+
+    box3        _bbox;
+    glm::vec3   _cog;
 };
 
 #endif // _mesh_h_
