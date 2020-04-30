@@ -127,6 +127,7 @@ void mesh::ComputeNormals()
     if ( _vertices.empty() || _trias.empty() )
         return;
 
+    _normals.clear();
     _normals.resize(_vertices.size(), 0.0f);
 
     auto evalTriaNorm = [this](unsigned int tria)
