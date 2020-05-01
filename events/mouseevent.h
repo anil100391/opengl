@@ -71,6 +71,7 @@ public:
         return "MouseMovedEvent";
     }
 };
+
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 class MousePressedEvent : public MouseEvent
@@ -98,6 +99,11 @@ public:
     virtual int GetCategoryFlags() const override
     {
         return EC_Mouse | EC_MouseButton | EC_Input;
+    }
+
+    [[nodiscard]] MouseEvent::Button GetButton() const noexcept
+    {
+        return _button;
     }
 
 private:
@@ -134,11 +140,18 @@ public:
         return EC_Mouse | EC_MouseButton | EC_Input;
     }
 
+    [[nodiscard]] MouseEvent::Button GetButton() const noexcept
+    {
+        return _button;
+    }
+
 private:
 
     MouseEvent::Button  _button;
 };
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class MouseScrollEvent : public MouseEvent
 {
 public:

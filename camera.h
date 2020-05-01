@@ -87,7 +87,7 @@ private:
 
     [[nodiscard]] glm::mat4 GetPerspectiveViewMatrix() const noexcept
     {
-        return glm::lookAt( _position, _lookAt, glm::vec3(0,1,0));
+        return glm::lookAt( _position, _lookAt, glm::vec3(0, 0, -1));
     }
 
     glm::vec3           _position;
