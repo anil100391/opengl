@@ -175,60 +175,8 @@ mesh::mesh(const char* filename)
                        << " normals: " << _normals.size() / 3 << "\n"
                        << " tex coords: " << _textureCoords.size() / 2 << "\n"
                        << " trias: " << _trias.size() << "\n";
-    ComputeSmoothNormals();
     ComputeCog();
     ComputeBBox();
-}
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-void mesh::ComputeSmoothNormals()
-{
-    if ( _vertices.empty() || _trias.empty() )
-        return;
-
-    _normals.clear();
-    _normals.resize(_vertices.size(), 0.0f);
-
-    auto evalTriaNorm = [this](unsigned int tria)
-    {
-        const mesh::triface &tri = _trias[tria];
-        float *v0 = &_vertices[3*tri[0]];
-        float *v1 = &_vertices[3*tri[3]];
-        float *v2 = &_vertices[3*tri[6]];
-        float e0[3] = {v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2] };
-        float e1[3] = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2] };
-        float n[3] = { e0[1] * e1[2] - e1[1] * e0[2],
-                       e1[0] * e0[2] - e0[0] * e1[2],
-                       e0[0] * e1[1] - e1[0] * e0[1] };
-
-        _normals[3*tri[0] + 0] += n[0];
-        _normals[3*tri[0] + 1] += n[1];
-        _normals[3*tri[0] + 2] += n[2];
-
-        _normals[3*tri[3] + 0] += n[0];
-        _normals[3*tri[3] + 1] += n[1];
-        _normals[3*tri[3] + 2] += n[2];
-
-        _normals[3*tri[6] + 0] += n[0];
-        _normals[3*tri[6] + 1] += n[1];
-        _normals[3*tri[6] + 2] += n[2];
-    };
-
-    for ( int ii = 0; ii < _trias.size(); ++ii )
-        evalTriaNorm(ii);
-
-    for ( int ii = 0; ii < _normals.size() / 3 ; ++ii )
-    {
-        float *nor = &_normals[3*ii];
-        float len = std::sqrt(nor[0] * nor[0] + nor[1] * nor[1]  + nor[2] * nor[2]);
-        if ( len > 0 )
-        {
-            nor[0] /= len;
-            nor[1] /= len;
-            nor[2] /= len;
-        }
-    }
 }
 
 // -----------------------------------------------------------------------------

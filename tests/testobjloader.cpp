@@ -6,6 +6,7 @@
 #include <fstream>
 #include <algorithm>
 #include "../app.h"
+#include "../utils/meshbufferobjects.h"
 
 #ifndef M_PI
 #define M_PI 3.141592653589793
@@ -26,65 +27,11 @@ TestObjLoader::TestObjLoader(Application *app)
 {
     SetUpCamera();
 
-    std::vector<float> &positions = _mesh._vertices;
-    std::vector<float> &normals   = _mesh._normals;
-    std::vector<mesh::triface> &trias = _mesh._trias;
-    std::vector<unsigned int> conn;
-    conn.reserve( 3 * trias.size() );
-    std::for_each( trias.begin(), trias.end(),
-                   [&conn]( const mesh::triface &f )
-                   {
-                       conn.push_back( f[0] );
-                       conn.push_back( f[3] );
-                       conn.push_back( f[6] );
-                   } );
-
-    std::vector<float> texcoord(2*positions.size() / 3, -20);
-    for ( const auto& t : trias )
-    {
-        int vid = t[0];
-        int tid = t[1];
-        const float *tc = &_mesh._textureCoords[2*tid];
-        if ( texcoord[2*vid + 0] < -10 )
-            texcoord[2*vid + 0] = tc[0];
-        if ( texcoord[2*vid + 1] < -10 )
-            texcoord[2*vid + 1] = tc[1];
-
-        vid = t[3];
-        tid = t[4];
-        tc = &_mesh._textureCoords[2*tid];
-        if ( texcoord[2*vid + 0] < -10 )
-            texcoord[2*vid + 0] = tc[0];
-        if ( texcoord[2*vid + 1] < -10 )
-            texcoord[2*vid + 1] = tc[1];
-
-        vid = t[6];
-        tid = t[7];
-        tc = &_mesh._textureCoords[2*tid];
-        if ( texcoord[2*vid + 0] < -10 )
-            texcoord[2*vid + 0] = tc[0];
-        if ( texcoord[2*vid + 1] < -10 )
-            texcoord[2*vid + 1] = tc[1];
-    }
-
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 
-    std::vector<float> vertices;
-    for ( int ii = 0; ii < positions.size() / 3; ++ii )
-    {
-        // push positions
-        vertices.push_back(positions[3*ii]);
-        vertices.push_back(positions[3*ii+1]);
-        vertices.push_back(positions[3*ii+2]);
-        // push normals
-        vertices.push_back(normals[3*ii]);
-        vertices.push_back(normals[3*ii+1]);
-        vertices.push_back(normals[3*ii+2]);
-        // push texture coordinates
-        vertices.push_back(texcoord[2*ii]);
-        vertices.push_back(texcoord[2*ii+1]);
-    }
+    std::vector<float> vertices = mbos::vbo(_mesh);
+    std::vector<unsigned int> conn = mbos::ibo(_mesh);
 
     _vao = std::make_unique<VertexArray>();
     _vbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
