@@ -18,7 +18,8 @@ namespace test
 // -----------------------------------------------------------------------------
 TestObjLoader::TestObjLoader(Application *app)
     : Test(app),
-      _mesh("res/suzanne.obj"),
+      //_mesh("res/suzanne.obj"),
+      _mesh("C:/Users/anils/Desktop/untitled.obj"),
       _material { glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
                   glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // diffuse
                   glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // specular
@@ -27,9 +28,17 @@ TestObjLoader::TestObjLoader(Application *app)
     SetUpCamera();
 
     std::vector<float> &positions = _mesh._vertices;
-    std::vector<float> &normals = _mesh._normals;
-    std::vector<unsigned int> &trias = _mesh._trias;
-    std::vector<unsigned int> &quad = _mesh._quads;;
+    std::vector<float> &normals   = _mesh._normals;
+    std::vector<mesh::triface> &trias = _mesh._trias;
+    std::vector<unsigned int> conn;
+    conn.reserve( trias.size() );
+    std::for_each( trias.begin(), trias.end(),
+                   [&conn]( const mesh::triface &f )
+                   { 
+                       conn.push_back( f[0] );
+                       conn.push_back( f[3] );
+                       conn.push_back( f[6] );
+                   } );
 
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
@@ -51,11 +60,12 @@ TestObjLoader::TestObjLoader(Application *app)
     _vbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
 
     VertexBufferLayout layout;
-    layout.Push<float>(3);
-    layout.Push<float>(3);
+    layout.Push<float>(3); // position
+    layout.Push<float>(3); // normal
+    // layout.Push<float>(2); // texture coordinate
     _vao->AddBuffer(*_vbo, layout);
 
-    _ibo = std::make_unique<IndexBuffer>(trias.data(), trias.size());
+    _ibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
 
     _shader = std::make_unique<Shader>("res/shaders/obj.shader");
     _selectShader = std::make_unique<Shader>("res/shaders/select.shader");
@@ -143,7 +153,8 @@ void TestObjLoader::OnEvent( Event &evt )
                 const glm::vec3& cor = _camera.GetLookAt();
                 const glm::vec3& pos = _camera.GetPosition();
                 int dx = mouseEvt.X() - startDragX;
-                dx = dx / abs(dx);
+                if ( dx != 0 )
+                    dx = dx / abs(dx);
                 startDragX = mouseEvt.X();
                 startDragY = mouseEvt.Y();
                 double dtheta = 2.0 * dx * M_PI / 180.0;

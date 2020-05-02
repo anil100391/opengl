@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <array>
 #include "bbox.h"
 
 #include <glm/glm.hpp>
@@ -12,13 +13,18 @@
 // -----------------------------------------------------------------------------
 struct mesh
 {
+    template <int N>
+    using polyface = std::array<int, 3 * N>;
+
+    using triface = polyface<3>;
+
     mesh(const char* filename);
 
     std::string                _name;
     std::vector<float>         _vertices;
     std::vector<float>         _normals;
-    std::vector<unsigned int>  _trias;
-    std::vector<unsigned int>  _quads;
+    std::vector<float>         _textureCoords;
+    std::vector<triface>       _trias;
 
     [[nodiscard]] const glm::vec3& cog() const noexcept
     {
@@ -30,11 +36,14 @@ struct mesh
         return _bbox;
     }
 
+    bool        _smoothShading = true;
+
 private:
 
     void ComputeNormals();
     void ComputeBBox();
     void ComputeCog();
+
 
     box3        _bbox;
     glm::vec3   _cog;
