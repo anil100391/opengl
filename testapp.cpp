@@ -95,7 +95,8 @@ void TestsApplication::Update()
 
     if ( _currentTest )
     {
-        _currentTest->OnUpdate( 0.0f );
+        double time = glfwGetTime();
+        _currentTest->OnUpdate( time );
         _currentTest->OnRender();
         ImGui::Begin( "Test" );
         if ( _currentTest != _testMenu && ImGui::Button( "< " ) )

@@ -54,12 +54,15 @@ private:
     std::unique_ptr<IndexBuffer>    _ibo;
     std::unique_ptr<Shader>         _shader;
     std::unique_ptr<Shader>         _selectShader;
+    std::unique_ptr<Texture>        _texture;
 
     glm::mat4                       _viewMat;
     glm::mat4                       _projMat;
 
     material                        _material;
     Camera                          _camera;
+
+    double                          _time;
 };
 
 }

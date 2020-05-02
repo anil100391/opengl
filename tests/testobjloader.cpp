@@ -39,6 +39,34 @@ TestObjLoader::TestObjLoader(Application *app)
                        conn.push_back( f[6] );
                    } );
 
+    std::vector<float> texcoord(2*positions.size() / 3, -20);
+    for ( const auto& t : trias )
+    {
+        int vid = t[0];
+        int tid = t[1];
+        const float *tc = &_mesh._textureCoords[2*tid];
+        if ( texcoord[2*vid + 0] < -10 )
+            texcoord[2*vid + 0] = tc[0];
+        if ( texcoord[2*vid + 1] < -10 )
+            texcoord[2*vid + 1] = tc[1];
+
+        vid = t[3];
+        tid = t[4];
+        tc = &_mesh._textureCoords[2*tid];
+        if ( texcoord[2*vid + 0] < -10 )
+            texcoord[2*vid + 0] = tc[0];
+        if ( texcoord[2*vid + 1] < -10 )
+            texcoord[2*vid + 1] = tc[1];
+
+        vid = t[6];
+        tid = t[7];
+        tc = &_mesh._textureCoords[2*tid];
+        if ( texcoord[2*vid + 0] < -10 )
+            texcoord[2*vid + 0] = tc[0];
+        if ( texcoord[2*vid + 1] < -10 )
+            texcoord[2*vid + 1] = tc[1];
+    }
+
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 
@@ -53,6 +81,9 @@ TestObjLoader::TestObjLoader(Application *app)
         vertices.push_back(normals[3*ii]);
         vertices.push_back(normals[3*ii+1]);
         vertices.push_back(normals[3*ii+2]);
+        // push texture coordinates
+        vertices.push_back(texcoord[2*ii]);
+        vertices.push_back(texcoord[2*ii+1]);
     }
 
     _vao = std::make_unique<VertexArray>();
@@ -61,7 +92,7 @@ TestObjLoader::TestObjLoader(Application *app)
     VertexBufferLayout layout;
     layout.Push<float>(3); // position
     layout.Push<float>(3); // normal
-    // layout.Push<float>(2); // texture coordinate
+    layout.Push<float>(2); // texture coordinate
     _vao->AddBuffer(*_vbo, layout);
 
     _ibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
@@ -69,6 +100,10 @@ TestObjLoader::TestObjLoader(Application *app)
     _shader = std::make_unique<Shader>("res/shaders/obj.shader");
     _selectShader = std::make_unique<Shader>("res/shaders/select.shader");
     _shader->Bind();
+
+    _texture = std::make_unique<Texture>("res/textures/suzanne.png");
+    _texture->Bind(0);
+    _shader->SetUniform1i("u_Texture", 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -81,6 +116,7 @@ TestObjLoader::~TestObjLoader()
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnUpdate(float deltaTime)
 {
+    _time = deltaTime;
 }
 
 // -----------------------------------------------------------------------------
@@ -93,6 +129,7 @@ void TestObjLoader::OnRender()
 
     {
         glm::mat4 model(1.0f); // identity
+        model = glm::rotate(glm::mat4(1.0), (float)_time, glm::vec3(0.0, 0.0, 1.0));
         _viewMat = _camera.GetViewMatrix();
         int width, height;
         _app->GetWindowSize(width, height);
