@@ -1,6 +1,7 @@
 #include "mesh.h"
 #include <cmath>
 #include <cassert>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -63,32 +64,42 @@ static void ParseFace(std::string_view vdata, mesh &m)
                                                     &nodes[3], &nodes[4], &nodes[5],
                                                     &nodes[6], &nodes[7], &nodes[8]) )
         {
-            m._trias.push_back( {nodes[0] - 1, nodes[1] - 1, nodes[2] - 1, nodes[3] - 1, nodes[4] - 1, nodes[5] - 1, nodes[6] - 1, nodes[7] - 1, nodes[8] - 1} );
+            m._trias.push_back( { nodes[0] - 1, nodes[1] - 1, nodes[2] - 1,
+                                  nodes[3] - 1, nodes[4] - 1, nodes[5] - 1,
+                                  nodes[6] - 1, nodes[7] - 1, nodes[8] - 1 } );
         }
     }
     else if (has_normals)
     {
         formatTrias = "%d//%d %d//%d %d//%d";
-        if ( 6 == sscanf(vdata.data(), formatTrias, &nodes[0], &nodes[1], &nodes[2],
-                                                    &nodes[3], &nodes[4], &nodes[5]) )
+        if ( 6 == sscanf(vdata.data(), formatTrias, &nodes[0], &nodes[2],
+                                                    &nodes[3], &nodes[5],
+                                                    &nodes[6], &nodes[8]) )
         {
-            m._trias.push_back( {nodes[0] - 1, 0, nodes[1] -1, nodes[2] - 1, 0, nodes[3] -1, nodes[4] - 1, 0, nodes[5] -1} );
+            m._trias.push_back( { nodes[0] - 1, nodes[1] - 1, nodes[2] - 1,
+                                  nodes[3] - 1, nodes[4] - 1, nodes[5] - 1,
+                                  nodes[6] - 1, nodes[7] - 1, nodes[8] - 1 } );
         }
     }
     else if (has_texcoords)
     {
         formatTrias = "%d/%d %d/%d %d/%d";
-        if ( 6 == sscanf(vdata.data(), formatTrias, &nodes[0], &nodes[1], &nodes[2],
-                                                    &nodes[3], &nodes[4], &nodes[5]) )
+        if ( 6 == sscanf(vdata.data(), formatTrias, &nodes[0], &nodes[1],
+                                                    &nodes[3], &nodes[4],
+                                                    &nodes[6], &nodes[7]) )
         {
-            m._trias.push_back( {nodes[0] - 1, nodes[1] -1, 0, nodes[2] - 1, nodes[3] -1, 0,nodes[4] - 1, nodes[5] -1, 0} );
+            m._trias.push_back( { nodes[0] - 1, nodes[1] - 1, nodes[2] - 1,
+                                  nodes[3] - 1, nodes[4] - 1, nodes[5] - 1,
+                                  nodes[6] - 1, nodes[7] - 1, nodes[8] - 1 } );
         }
     }
     else
     {
-        if ( 3 == sscanf(vdata.data(), formatTrias, &nodes[0], &nodes[1], &nodes[2]) )
+        if ( 3 == sscanf(vdata.data(), formatTrias, &nodes[0], &nodes[3], &nodes[6]) )
         {
-            m._trias.push_back( {nodes[0] - 1, 0, 0, nodes[1] - 1, 0, 0, nodes[2] - 1, 0, 0} );
+            m._trias.push_back( { nodes[0] - 1, nodes[1] - 1, nodes[2] - 1,
+                                  nodes[3] - 1, nodes[4] - 1, nodes[5] - 1,
+                                  nodes[6] - 1, nodes[7] - 1, nodes[8] - 1 } );
         }
     }
 }
@@ -161,15 +172,17 @@ mesh::mesh(const char* filename)
 
     std::cout << _name << " stats\n"
                        << " vertices: " << _vertices.size() / 3 << "\n"
-                       << " trias: " << _trias.size() / 3 << "\n";
-    // ComputeNormals();
+                       << " normals: " << _normals.size() / 3 << "\n"
+                       << " tex coords: " << _textureCoords.size() / 2 << "\n"
+                       << " trias: " << _trias.size() << "\n";
+    ComputeSmoothNormals();
     ComputeCog();
     ComputeBBox();
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void mesh::ComputeNormals()
+void mesh::ComputeSmoothNormals()
 {
     if ( _vertices.empty() || _trias.empty() )
         return;
@@ -179,7 +192,7 @@ void mesh::ComputeNormals()
 
     auto evalTriaNorm = [this](unsigned int tria)
     {
-        const mesh::triface &tri = _trias[3 * tria];
+        const mesh::triface &tri = _trias[tria];
         float *v0 = &_vertices[3*tri[0]];
         float *v1 = &_vertices[3*tri[3]];
         float *v2 = &_vertices[3*tri[6]];
@@ -191,7 +204,7 @@ void mesh::ComputeNormals()
 
         _normals[3*tri[0] + 0] += n[0];
         _normals[3*tri[0] + 1] += n[1];
-        _normals[3*tri[0]+ 2] += n[2];
+        _normals[3*tri[0] + 2] += n[2];
 
         _normals[3*tri[3] + 0] += n[0];
         _normals[3*tri[3] + 1] += n[1];
@@ -202,7 +215,7 @@ void mesh::ComputeNormals()
         _normals[3*tri[6] + 2] += n[2];
     };
 
-    for ( int ii = 0; ii < _trias.size() / 3; ++ii )
+    for ( int ii = 0; ii < _trias.size(); ++ii )
         evalTriaNorm(ii);
 
     for ( int ii = 0; ii < _normals.size() / 3 ; ++ii )

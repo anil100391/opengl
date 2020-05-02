@@ -40,7 +40,7 @@ struct mesh
 
 private:
 
-    void ComputeNormals();
+    void ComputeSmoothNormals();
     void ComputeBBox();
     void ComputeCog();
 

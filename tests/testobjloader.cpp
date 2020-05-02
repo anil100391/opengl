@@ -18,10 +18,9 @@ namespace test
 // -----------------------------------------------------------------------------
 TestObjLoader::TestObjLoader(Application *app)
     : Test(app),
-      //_mesh("res/suzanne.obj"),
-      _mesh("C:/Users/anils/Desktop/untitled.obj"),
+      _mesh("res/suzanne.obj"),
       _material { glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
-                  glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), // diffuse
+                  glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // diffuse
                   glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // specular
                   32.0f }                            // shininess
 {
@@ -31,10 +30,10 @@ TestObjLoader::TestObjLoader(Application *app)
     std::vector<float> &normals   = _mesh._normals;
     std::vector<mesh::triface> &trias = _mesh._trias;
     std::vector<unsigned int> conn;
-    conn.reserve( trias.size() );
+    conn.reserve( 3 * trias.size() );
     std::for_each( trias.begin(), trias.end(),
                    [&conn]( const mesh::triface &f )
-                   { 
+                   {
                        conn.push_back( f[0] );
                        conn.push_back( f[3] );
                        conn.push_back( f[6] );
