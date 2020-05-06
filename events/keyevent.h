@@ -54,7 +54,7 @@ public:
         return EventType::KeyPressed;
     }
 
-    const char* GetName() const
+    const char* GetName() const override
     {
         return "KeyPressedEvent";
     }
@@ -90,7 +90,7 @@ public:
         return EventType::KeyReleased;
     }
 
-    const char* GetName() const
+    const char* GetName() const override
     {
         return "KeyReleasedEvent";
     }
