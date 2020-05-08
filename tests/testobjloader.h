@@ -40,6 +40,8 @@ public:
 
 private:
 
+    void         CreateMeshGLBuffers();
+
     void         Select(int x, int y);
 
     void         SetUpCamera() noexcept;
@@ -63,6 +65,7 @@ private:
     Camera                          _camera;
 
     double                          _time;
+    bool                            _flatShading = true;
 };
 
 }

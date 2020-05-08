@@ -9,7 +9,7 @@
 class KeyEvent : public Event
 {
 public:
-    inline int GetKeycode() const
+    inline int GetKeyCode() const
     {
         return _keyCode;
     }

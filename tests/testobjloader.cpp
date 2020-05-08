@@ -2,6 +2,7 @@
 #include "../renderer.h"
 #include "../light.h"
 #include "../events/mouseevent.h"
+#include "../events/keyevent.h"
 #include <imgui.h>
 #include <fstream>
 #include <algorithm>
@@ -30,8 +31,23 @@ TestObjLoader::TestObjLoader(Application *app)
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
 
-    std::vector<float> vertices = mbos::vbo(_mesh);
-    std::vector<unsigned int> conn = mbos::ibo(_mesh);
+    CreateMeshGLBuffers();
+
+    _shader = std::make_unique<Shader>("res/shaders/obj.shader");
+    _selectShader = std::make_unique<Shader>("res/shaders/select.shader");
+    _shader->Bind();
+
+    _texture = std::make_unique<Texture>("res/textures/suzanne.png");
+    _texture->Bind(0);
+    _shader->SetUniform1i("u_Texture", 0);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestObjLoader::CreateMeshGLBuffers()
+{
+    std::vector<float> vertices = mbos::vbo(_mesh, _flatShading);
+    std::vector<unsigned int> conn = mbos::ibo(_mesh, _flatShading);
 
     _vao = std::make_unique<VertexArray>();
     _vbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
@@ -43,14 +59,6 @@ TestObjLoader::TestObjLoader(Application *app)
     _vao->AddBuffer(*_vbo, layout);
 
     _ibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
-
-    _shader = std::make_unique<Shader>("res/shaders/obj.shader");
-    _selectShader = std::make_unique<Shader>("res/shaders/select.shader");
-    _shader->Bind();
-
-    _texture = std::make_unique<Texture>("res/textures/suzanne.png");
-    _texture->Bind(0);
-    _shader->SetUniform1i("u_Texture", 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -180,6 +188,16 @@ void TestObjLoader::OnEvent( Event &evt )
             float scale = 0.1f * mouseEvt.YOffset();
             dir = dir +  dir * scale;
             _camera.SetPosition(lookAt + dir);
+            break;
+        }
+        case EventType::KeyPressed:
+        {
+            auto& keyEvent = static_cast<KeyPressedEvent&>(evt);
+            if ( keyEvent.GetKeyCode() == GLFW_KEY_S )
+            {
+                _flatShading = !_flatShading;
+                CreateMeshGLBuffers();
+            }
             break;
         }
         case EventType::WindowResize:

@@ -8,13 +8,14 @@
 class mbos
 {
 public:
-    static std::vector<float> vbo(const mesh& m);
-    static std::vector<unsigned int> ibo(const mesh& m);
+    static std::vector<float> vbo(const mesh& m, bool flatShading);
+    static std::vector<unsigned int> ibo(const mesh& m, bool flatShading);
 
 private:
 
-    static std::vector<float> ComputeVertexNormals(const mesh& m);
-    static std::vector<float> ComputeVertexTexCoords(const mesh& m);
+    static std::vector<float> ComputeVertices(const mesh& m, bool flatShading);
+    static std::vector<float> ComputeVertexNormals(const mesh& m, bool flatShading);
+    static std::vector<float> ComputeVertexTexCoords(const mesh& m, bool flatShading);
 };
 
 #endif // _mesh_buffer_objects_h_
