@@ -49,6 +49,18 @@ TestsApplication::TestsApplication() : Application()
     ImGui_ImplGlfw_InitForOpenGL( _window, true );
     ImGui_ImplOpenGL3_Init( glsl_version );
 
+    auto& style = ImGui::GetStyle();
+    style.ChildRounding     = 0.0f;
+    style.WindowRounding    = 0.0f;
+    style.FrameRounding     = 0.0f;
+    style.GrabRounding      = 0.0f;
+    style.PopupRounding     = 0.0f;
+    style.ScrollbarRounding = 0.0f;
+    // style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.08f, 0.56f, 0.24, 1.0f);
+    // style.Colors[ImGuiCol_ResizeGrip]    = ImVec4(0.08f, 0.56f, 0.24, 1.0f);
+    // style.Colors[ImGuiCol_Button]        = ImVec4(0.08f, 0.56f, 0.24, 1.0f);
+
+
     _testMenu    = new test::TestMenu( this, _currentTest );
     _currentTest = _testMenu;
 
