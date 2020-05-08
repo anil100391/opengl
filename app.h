@@ -39,8 +39,6 @@ public:
 
     virtual bool OnEvent( Event &evt );
 
-    bool _terminate = false;
-
 protected:
 
     WindowProperties _windPros;

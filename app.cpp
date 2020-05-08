@@ -19,7 +19,6 @@ void KeyCallback( GLFWwindow *window,
     if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
     {
         glfwSetWindowShouldClose( window, GLFW_TRUE );
-        app->_terminate = true;
     }
 
     static unsigned int repeatcnt = 0;
@@ -211,7 +210,7 @@ bool Application::OnEvent( Event &evt )
 // -----------------------------------------------------------------------------
 void Application::Run()
 {
-    while ( !_terminate )
+    while ( !glfwWindowShouldClose(_window) )
     {
         Update();
     }
