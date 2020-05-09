@@ -7,6 +7,9 @@ I add anything I do myself to branch experiments of this repo
 ## Linux
 * Open a terminal prompt in project directory
   ``` bash
+      git clone https://github.com/anil100391/opengl.git
+      git submodule init
+      git submodule update
       mkdir build
       cd build
       cmake -DCMAKE_BUILD_TYPE=Release ../.
