@@ -166,12 +166,18 @@ vec4 newtonShader(vec2 texcoord)
 
     vec2 z = getFragmentCoordinate(v_texCoord);
 
+    // z_n+1 -> z_n - f(z_n) / f'(z_n)
+    // f: z^3 -2z + 2
+    // f': 3z^2 - 2
+
+    vec2 roots[3];
+    roots[0] = vec2(-1.76929235f, 0.0);
+    roots[1] = vec2(0.88464618, 0.58974281);
+    roots[2] = vec2(0.88464618, -0.58974281);
+
+    float tol = 0.00001;
+
     int i = 0;
- 
-    // z -> z - f(z) / f'(z)
-    // for f(z) = z^3 - 1
-    // z -> z - (z^3 - 1) / (3z^2)
-    // z -> (2z^3 +  1) / (3z^2)
 
     for ( i = 0; i < iter; ++i )
     {
@@ -180,10 +186,13 @@ vec4 newtonShader(vec2 texcoord)
         zn.y = z.y;
 
         complex fz = exponent(zn, 3);
-        fz.x -= 1.0;
+        fz.x += 2.0;
+        fz.x -= 2*zn.x;
+        fz.y -= 2*zn.y;
 
         complex fprimez = exponent(zn,2);
         fprimez.x *= 3.0;
+        fprimez.x -= 2.0;
         fprimez.y *= 3.0;
 
         complex fzbyfprimez = mult(fz, conjugate(fprimez));
@@ -194,37 +203,50 @@ vec4 newtonShader(vec2 texcoord)
         // apply newton's iteration
         z.x = z.x - fzbyfprimez.x;
         z.y = z.y - fzbyfprimez.y;
+
+        int j;
+        int foundroot = 0;
+        for ( j = 0; j < 3; ++j)
+        {
+            if ( length(z-roots[j]) < tol )
+            {
+                foundroot = 1;
+                break;
+            }
+        }
+
+        if ( foundroot == 1 )
+            break;
     }
 
-    vec4 r = vec4(1.0, 0.0, 0.0, 1.0);
+    vec4 r = vec4(1.0, 0.5, 0.0, 1.0);
     vec4 g = vec4(0.0, 1.0, 0.0, 1.0);
-    vec4 b = vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 b = vec4(0.5, 0.7, 0.1, 1.0);
+
+    float a0 = 0.233;
+    float a1 = 1.609;
+    float normi = float(i)/(1.0 * iter);
+    normi = pow(normi, a1);
+    normi = 2.0 * normi - 1.0;
+    float mixfac = a0 - exp(-2.0f * normi * normi);
 
     vec4 colors[3];
     colors[0] = r;
     colors[1] = g;
     colors[2] = b;
 
-    float pi = 3.141592653589793;
-
-    vec2 roots[3];
-    roots[0] = vec2(1.0f, 0.0);
-    roots[1] = vec2(cos(2.0f*pi/3.0f), sin(2.0f*pi/3.0f));
-    roots[2] = vec2(cos(4.0f*pi/3.0f), sin(4.0f*pi/3.0f));
-
     vec2 fragcoord = getFragmentCoordinate(v_texCoord);
 
-    float tol = 0.0000001;
     for ( int ii = 0; ii < 3; ++ii )
     {
         vec2 diff = z - roots[ii];
         if ( abs(diff.x) < tol && abs(diff.y) < tol )
         {
-            return colors[ii];
+            return colors[ii] * mixfac * 10.0;
         }
     }
 
-    return vec4(vec3(0.0), 1.0);
+    return vec4(vec3(0.0), 1.0) * vec4(vec3(mixfac), 1.0);
 }
 
 // -----------------------------------------------------------------------------
