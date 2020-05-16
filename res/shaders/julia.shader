@@ -38,12 +38,45 @@ struct complex
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+float absSq(complex z)
+{
+    return z.x * z.x + z.y * z.y;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+complex conjugate(complex z)
+{
+    complex zbar = z;
+    zbar.y *= -1.0;
+    return zbar;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 complex mult(complex a, complex b)
 {
     complex res;
     res.x = a.x * b.x - a.y * b.y;
     res.y = a.x * b.y + b.x * a.y;
     return res;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+complex exponent(complex z, int n)
+{
+    if ( n == 1 )
+        return z;
+
+    complex zn = z;
+    int ii = 1;
+    for ( ii = 1; ii < n; ++ii )
+    {
+        zn = mult(zn, z);
+    }
+
+    return zn;
 }
 
 // -----------------------------------------------------------------------------
@@ -146,24 +179,21 @@ vec4 newtonShader(vec2 texcoord)
         zn.x = z.x;
         zn.y = z.y;
 
-        complex zsq = mult(zn, zn);
-        complex zcu = mult(zsq, zn);
+        complex fz = exponent(zn, 3);
+        fz.x -= 1.0;
 
-        zcu.x = (zcu.x * 2.0f + 1.0f) / 3.0f;
-        zcu.y = (zcu.y * 2.0f) / 3.0f;
+        complex fprimez = exponent(zn,2);
+        fprimez.x *= 3.0;
+        fprimez.y *= 3.0;
 
-        complex zsqconj;
-        zsqconj.x = zsq.x;
-        zsqconj.y = -zsq.y;
+        complex fzbyfprimez = mult(fz, conjugate(fprimez));
+        float len = absSq(fprimez);
+        fzbyfprimez.x /= len;
+        fzbyfprimez.y /= len;
 
-        complex numerator = mult(zcu, zsqconj);
-        float denominator = zsq.x * zsq.x + zsq.y * zsq.y;
-
-        numerator.x /= denominator;
-        numerator.y /= denominator;
-
-        z.x = numerator.x;
-        z.y = numerator.y;
+        // apply newton's iteration
+        z.x = z.x - fzbyfprimez.x;
+        z.y = z.y - fzbyfprimez.y;
     }
 
     vec4 r = vec4(1.0, 0.0, 0.0, 1.0);
