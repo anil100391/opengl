@@ -99,8 +99,9 @@ void TestFragmentShader::OnImGuiRender()
 {
     // ImGui::SliderFloat("startx", &_mouseX, -1.5f, 1.5f);
     // ImGui::SliderFloat("starty", &_mouseY, -1.5f, 1.5f);
-    ImGui::RadioButton("julia", &_mode, 0); ImGui::SameLine();
-    ImGui::RadioButton("mandelbrot", &_mode, 1); ImGui::SameLine();
+    ImGui::RadioButton("Julia", &_mode, 0);
+    ImGui::RadioButton("Mandelbrot", &_mode, 1);
+    ImGui::RadioButton("Newton", &_mode, 2);
 }
 
 // -----------------------------------------------------------------------------
