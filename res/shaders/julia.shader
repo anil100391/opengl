@@ -170,23 +170,31 @@ vec4 newtonShader(vec2 texcoord)
     vec4 g = vec4(0.0, 1.0, 0.0, 1.0);
     vec4 b = vec4(0.0, 0.0, 1.0, 1.0);
 
+    vec4 colors[3];
+    colors[0] = r;
+    colors[1] = g;
+    colors[2] = b;
+
     float pi = 3.141592653589793;
+
+    vec2 roots[3];
+    roots[0] = vec2(1.0f, 0.0);
+    roots[1] = vec2(cos(2.0f*pi/3.0f), sin(2.0f*pi/3.0f));
+    roots[2] = vec2(cos(4.0f*pi/3.0f), sin(4.0f*pi/3.0f));
 
     vec2 fragcoord = getFragmentCoordinate(v_texCoord);
 
-    float dist = length(fragcoord-z);
-    float wt = exp(-dist * dist);
+    float tol = 0.0000001;
+    for ( int ii = 0; ii < 3; ++ii )
+    {
+        vec2 diff = z - roots[ii];
+        if ( abs(diff.x) < tol && abs(diff.y) < tol )
+        {
+            return colors[ii];
+        }
+    }
 
-    float d0 = length(z-vec2(1.0, 0));
-    float d1 = length(z-vec2(cos(2.0f*pi/3.0f), sin(2.0f*pi/3.0f)));
-    float d2 = length(z-vec2(cos(4.0f*pi/3.0f), sin(4.0f*pi/3.0f)));
-
-    float sum = d0 + d1 + d2;
-    d0 /= sum;
-    d1 /= sum;
-    d2 /= sum;
-
-    return r * d0 * wt + g * d1 * wt + b * d2 * wt;
+    return vec4(vec3(0.0), 1.0);
 }
 
 // -----------------------------------------------------------------------------
