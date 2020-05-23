@@ -21,6 +21,9 @@
 #include <utility>
 #include <iostream>
 
+#include "../vendor/imgui/imgui.h"
+#include "../vendor/imgui/imfilebrowser.h"
+
 namespace test
 {
 
@@ -66,6 +69,8 @@ private:
 
     double                          _time;
     bool                            _flatShading = true;
+
+    ImGui::FileBrowser              _fileDialog;
 };
 
 }

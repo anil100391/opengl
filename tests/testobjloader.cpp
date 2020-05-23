@@ -26,6 +26,9 @@ TestObjLoader::TestObjLoader(Application *app)
                   glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // specular
                   32.0f }                            // shininess
 {
+    _fileDialog.SetTitle("Open Mesh");
+    _fileDialog.SetTypeFilters({".obj"});
+
     SetUpCamera();
 
     glDisable(GL_BLEND);
@@ -37,8 +40,8 @@ TestObjLoader::TestObjLoader(Application *app)
     _selectShader = std::make_unique<Shader>("res/shaders/select.shader");
     _shader->Bind();
 
-    _texture = std::make_unique<Texture>("res/textures/suzanne.png");
-    _texture->Bind(0);
+    // _texture = std::make_unique<Texture>("res/textures/suzanne.png");
+    // _texture->Bind(0);
     _shader->SetUniform1i("u_Texture", 0);
 }
 
@@ -71,7 +74,7 @@ TestObjLoader::~TestObjLoader()
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnUpdate(float deltaTime)
 {
-    _time = deltaTime;
+    //_time = deltaTime;
 }
 
 // -----------------------------------------------------------------------------
@@ -120,6 +123,21 @@ void TestObjLoader::OnRender()
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnImGuiRender()
 {
+    if ( ImGui::Button("Open Mesh") )
+    {
+        _fileDialog.Open();
+    }
+
+    _fileDialog.Display();
+    if ( _fileDialog.HasSelected() )
+    {
+        auto file = _fileDialog.GetSelected().string();
+        _fileDialog.ClearSelected();
+        _mesh = mesh(file.c_str());
+        CreateMeshGLBuffers();
+    }
+
+    Test::OnImGuiRender();
 }
 
 // -----------------------------------------------------------------------------

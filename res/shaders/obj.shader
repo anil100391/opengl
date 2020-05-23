@@ -53,8 +53,8 @@ uniform sampler2D u_Texture;
 
 void main()
 {
-    vec4 texColor = texture(u_Texture, v_TexCoord);
-    gl_FragColor = texColor;
+    // vec4 texColor = texture(u_Texture, v_TexCoord);
+    vec4 texColor = vec4(vec3(0.7), 1.0);
 
     // ambient
     vec4 ambient = light.ambient * material.ambient * texColor;
