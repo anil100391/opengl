@@ -5,6 +5,8 @@
 #include "../events/keyevent.h"
 #include <imgui.h>
 #include <fstream>
+#include <vector>
+#include <string>
 #include <algorithm>
 #include "../app.h"
 #include "../utils/meshbufferobjects.h"
@@ -31,8 +33,19 @@ TestObjLoader::TestObjLoader(Application *app)
 
     SetUpCamera();
 
-    glDisable(GL_BLEND);
+    glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+
+    CreateEnvironmentGLBuffers();
+    std::vector<std::string> skyboxFiles { "res/textures/skybox/right.jpg",
+                                           "res/textures/skybox/left.jpg",
+                                           "res/textures/skybox/top.jpg",
+                                           "res/textures/skybox/bottom.jpg",
+                                            "res/textures/skybox/front.jpg",
+                                            "res/textures/skybox/back.jpg"
+                                           };
+    _cubemapTexture = std::make_unique<CubeMap>(skyboxFiles);
+    _cubemapShader = std::make_unique<Shader>("res/shaders/cubemap.shader");
 
     CreateMeshGLBuffers();
 
@@ -43,6 +56,70 @@ TestObjLoader::TestObjLoader(Application *app)
     // _texture = std::make_unique<Texture>("res/textures/suzanne.png");
     // _texture->Bind(0);
     _shader->SetUniform1i("u_Texture", 0);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestObjLoader::CreateEnvironmentGLBuffers()
+{
+    std::vector<float> vertices = { -1.0f,  1.0f, -1.0f,
+                                    -1.0f, -1.0f, -1.0f,
+                                     1.0f, -1.0f, -1.0f,
+                                     1.0f, -1.0f, -1.0f,
+                                     1.0f,  1.0f, -1.0f,
+                                    -1.0f,  1.0f, -1.0f,
+
+                                    -1.0f, -1.0f,  1.0f,
+                                    -1.0f, -1.0f, -1.0f,
+                                    -1.0f,  1.0f, -1.0f,
+                                    -1.0f,  1.0f, -1.0f,
+                                    -1.0f,  1.0f,  1.0f,
+                                    -1.0f, -1.0f,  1.0f,
+
+                                     1.0f, -1.0f, -1.0f,
+                                     1.0f, -1.0f,  1.0f,
+                                     1.0f,  1.0f,  1.0f,
+                                     1.0f,  1.0f,  1.0f,
+                                     1.0f,  1.0f, -1.0f,
+                                     1.0f, -1.0f, -1.0f,
+
+                                    -1.0f, -1.0f,  1.0f,
+                                    -1.0f,  1.0f,  1.0f,
+                                     1.0f,  1.0f,  1.0f,
+                                     1.0f,  1.0f,  1.0f,
+                                     1.0f, -1.0f,  1.0f,
+                                    -1.0f, -1.0f,  1.0f,
+
+                                    -1.0f,  1.0f, -1.0f,
+                                     1.0f,  1.0f, -1.0f,
+                                     1.0f,  1.0f,  1.0f,
+                                     1.0f,  1.0f,  1.0f,
+                                    -1.0f,  1.0f,  1.0f,
+                                    -1.0f,  1.0f, -1.0f,
+
+                                    -1.0f, -1.0f, -1.0f,
+                                    -1.0f, -1.0f,  1.0f,
+                                     1.0f, -1.0f, -1.0f,
+                                     1.0f, -1.0f, -1.0f,
+                                    -1.0f, -1.0f,  1.0f,
+                                     1.0f, -1.0f,  1.0f
+                                  };
+
+    std::vector<unsigned int> conn = { 0, 1, 2, 3, 4, 5,
+                                       6, 7, 8, 9, 10, 11,
+                                       12, 13, 14, 15, 15, 17,
+                                       18, 19, 20, 21, 22, 23,
+                                       24, 25, 26, 27, 28, 29,
+                                       30, 31, 32, 33, 34, 35 };
+
+    _envvao = std::make_unique<VertexArray>();
+    _envvbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
+
+    VertexBufferLayout layout;
+    layout.Push<float>(3); // position
+    _envvao->AddBuffer(*_envvbo, layout);
+
+    _envibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -74,7 +151,7 @@ TestObjLoader::~TestObjLoader()
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnUpdate(float deltaTime)
 {
-    //_time = deltaTime;
+    // _time = deltaTime;
 }
 
 // -----------------------------------------------------------------------------
@@ -82,10 +159,31 @@ void TestObjLoader::OnUpdate(float deltaTime)
 void TestObjLoader::OnRender()
 {
     Renderer renderer;
-    glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+    // glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     {
+        // first draw the skybox
+
+        glm::mat4 model(1.0f);
+        _viewMat = _camera.GetViewMatrix();
+        int width, height;
+        _app->GetWindowSize(width, height);
+        auto proj = glm::perspective(glm::radians(45.0f), (float) width / (float)height, 0.1f, 100.0f);
+        auto mvp = model * glm::mat4(glm::mat3(_viewMat)) * proj;
+
+        glDepthMask(GL_FALSE);
+        _cubemapShader->SetUniformMat4f("u_MVP", mvp);
+
+        _cubemapTexture->Bind();
+        _cubemapShader->Bind();
+        renderer.Draw(*_envvao, *_envibo, *_cubemapShader);
+    }
+
+
+    {
+        glDepthMask(GL_TRUE);
+
         glm::mat4 model(1.0f); // identity
         model = glm::rotate(glm::mat4(1.0), (float)_time, glm::vec3(0.0, 0.0, 1.0));
         _viewMat = _camera.GetViewMatrix();
@@ -107,7 +205,7 @@ void TestObjLoader::OnRender()
         _shader->SetUniform1f("material.shininess", m._shininess);
 
         // set light uniforms
-        light l = GetLight();
+        pointlight l = GetLight();
 
         _shader->SetUniform3f("light.position", l._position);
         _shader->SetUniform4f("light.ambient", l._ambient);
@@ -291,13 +389,15 @@ void TestObjLoader::SetMaterial(const material& m)
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-light TestObjLoader::GetLight() const
+pointlight TestObjLoader::GetLight() const
 {
-    const glm::vec3& p = _camera.GetPosition();
-    return { glm::vec3(p[0], p[1], p[2]),       // position
-             glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
+    const box3& meshBBox = _mesh.bbox();
+    const float* min = meshBBox.max();
+    const glm::vec3 p(5 * min[0], 5 * min[1], 5 * min[2]);
+    return { glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
              glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // diffuse
              glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), // specular
+             glm::vec3(p[0], p[1], p[2])        // position
            };
 }
 

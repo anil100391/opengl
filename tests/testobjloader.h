@@ -11,6 +11,7 @@
 #include "../utils/mesh.h"
 #include "../light.h"
 #include "../camera.h"
+#include "../cubemap.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -44,6 +45,7 @@ public:
 private:
 
     void         CreateMeshGLBuffers();
+    void         CreateEnvironmentGLBuffers();
 
     void         Select(int x, int y);
 
@@ -51,7 +53,7 @@ private:
 
     const material& GetMaterial() const;
     void            SetMaterial(const material& m);
-    light           GetLight() const;
+    pointlight      GetLight() const;
 
     mesh                            _mesh;
     std::unique_ptr<VertexArray>    _vao;
@@ -66,6 +68,13 @@ private:
 
     material                        _material;
     Camera                          _camera;
+
+    // enviroment texture
+    std::unique_ptr<VertexArray>    _envvao;
+    std::unique_ptr<VertexBuffer>   _envvbo;
+    std::unique_ptr<IndexBuffer>    _envibo;
+    std::unique_ptr<CubeMap>        _cubemapTexture;
+    std::unique_ptr<Shader>         _cubemapShader;
 
     double                          _time;
     bool                            _flatShading = true;
