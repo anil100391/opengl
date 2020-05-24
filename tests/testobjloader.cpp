@@ -151,7 +151,7 @@ TestObjLoader::~TestObjLoader()
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnUpdate(float deltaTime)
 {
-    // _time = deltaTime;
+     _time = deltaTime;
 }
 
 // -----------------------------------------------------------------------------
@@ -159,31 +159,10 @@ void TestObjLoader::OnUpdate(float deltaTime)
 void TestObjLoader::OnRender()
 {
     Renderer renderer;
-    // glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+    glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     {
-        // first draw the skybox
-
-        glm::mat4 model(1.0f);
-        _viewMat = _camera.GetViewMatrix();
-        int width, height;
-        _app->GetWindowSize(width, height);
-        auto proj = glm::perspective(glm::radians(45.0f), (float) width / (float)height, 0.1f, 100.0f);
-        auto mvp = model * glm::mat4(glm::mat3(_viewMat)) * proj;
-
-        glDepthMask(GL_FALSE);
-        _cubemapShader->SetUniformMat4f("u_MVP", mvp);
-
-        _cubemapTexture->Bind();
-        _cubemapShader->Bind();
-        renderer.Draw(*_envvao, *_envibo, *_cubemapShader);
-    }
-
-
-    {
-        glDepthMask(GL_TRUE);
-
         glm::mat4 model(1.0f); // identity
         model = glm::rotate(glm::mat4(1.0), (float)_time, glm::vec3(0.0, 0.0, 1.0));
         _viewMat = _camera.GetViewMatrix();
@@ -191,6 +170,7 @@ void TestObjLoader::OnRender()
         _app->GetWindowSize(width, height);
         _projMat = glm::perspective(glm::radians(45.0f), (float) width / (float)height, 0.1f, 100.0f);
 
+        _shader->Bind();
         // set transformation matrices uniforms
         _shader->SetUniformMat4f("u_M", model);
         _shader->SetUniformMat4f("u_V", _viewMat);
@@ -212,8 +192,23 @@ void TestObjLoader::OnRender()
         _shader->SetUniform4f("light.diffuse", l._diffuse);
         _shader->SetUniform4f("light.specular", l._specular);
 
-        _shader->Bind();
         renderer.Draw(*_vao, *_ibo, *_shader);
+    }
+
+    {
+        glm::mat4 model(1.0f);
+        glm::mat4 viewmat = glm::mat4(glm::mat3(_camera.GetViewMatrix()));
+        int width, height;
+        _app->GetWindowSize(width, height);
+        auto proj = glm::perspective(glm::radians(45.0f), (float) width / (float)height, 0.1f, 100.0f);
+        auto mvp = model /* viewmat*/ * proj;
+
+        glDepthFunc(GL_LEQUAL);
+        _cubemapTexture->Bind();
+        _cubemapShader->Bind();
+        _cubemapShader->SetUniformMat4f("u_MVP", mvp);
+        renderer.Draw(*_envvao, *_envibo, *_cubemapShader);
+        glDepthFunc(GL_LESS);
     }
 }
 

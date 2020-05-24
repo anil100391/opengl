@@ -15,7 +15,8 @@ uniform mat4 u_MVP;
 void main()
 {
     texCoord = position;
-    gl_Position = u_MVP * vec4(position, 1.0);
+    vec4 pos = u_MVP * vec4(position, 1.0);
+    gl_Position = pos.xyww;
 };
 
 // -----------------------------------------------------------------------------
