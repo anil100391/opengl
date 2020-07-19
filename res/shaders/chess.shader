@@ -20,7 +20,7 @@ uniform int u_Cell;
 
 void main()
 {
-    if ( u_Cell % 3 == 0 )
+    if ( ((u_Cell / 8)  % 2) == u_Cell % 2 )
         gl_FragColor = vec4(0.1, 0.1, 0.1, 1.0f);
     else
         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0f);
