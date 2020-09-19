@@ -7,6 +7,7 @@
 #include "tests/testobjloader.h"
 #include "tests/testtexture2d.h"
 #include "tests/testchess.h"
+#include "tests/testgame.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -69,6 +70,7 @@ TestsApplication::TestsApplication() : Application()
     _testMenu->RegisterTest<test::TestObjLoader>( "Obj Viewer" );
     _testMenu->RegisterTest<test::TestFragmentShader>( "FragmentShader" );
     _testMenu->RegisterTest<test::TestChess>( "Chess" );
+    _testMenu->RegisterTest<test::TestGame>( "Game" );
 }
 
 // -----------------------------------------------------------------------------
