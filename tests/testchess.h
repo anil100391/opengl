@@ -27,9 +27,11 @@ public:
     virtual void OnUpdate(float deltaTime) override {}
     virtual void OnRender() override;
     virtual void OnImGuiRender() override {}
-    virtual void OnEvent(Event &evt) override {}
+    virtual void OnEvent(Event& evt) override;
 
 private:
+
+    void GenerateBoardGLBuffers();
 
     std::unique_ptr<VertexArray>    _vao;
     std::unique_ptr<VertexBuffer>   _vbo;
