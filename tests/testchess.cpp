@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "testchess.h"
 #include "../renderer.h"
 #include <imgui.h>
@@ -66,6 +68,8 @@ void TestChess::OnRender()
         _shader->SetUniformMat4f("u_MVP", mvp);
 
         _shader->SetUniform1i("u_Cell", ii);
+        _shader->SetUniform1f("u_Size", size);
+        _shader->SetUniform2f( "u_CellOrigin", model[3][0], model[3][1] );
 
         renderer.Draw(*_vao, *_ibo, *_shader);
     }
