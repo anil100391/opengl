@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <map>
 
 #include "testchess.h"
 #include "../renderer.h"
@@ -21,7 +22,11 @@ TestChess::TestChess(Application *app)
       _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f))
 {
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
     GenerateBoardGLBuffers();
+    GeneratePieceGLBuffers();
 }
 
 // -----------------------------------------------------------------------------
@@ -34,45 +39,13 @@ TestChess::~TestChess()
 // -----------------------------------------------------------------------------
 void TestChess::OnRender()
 {
-    Renderer renderer;
     glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear( GL_COLOR_BUFFER_BIT );
 
-    _shader->Bind();
-
-    int w = 0;
-    int h = 0;
-    _app->GetWindowSize(w, h);
-    _projMat = glm::ortho(0.0f, 1.0f * w, 0.0f, 1.0f * h, -1.0f, 1.0f);
-
-    float size = std::min(w, h) / 8.0f;
-
-    glm::mat4 offset;
-    if (w > h)
-    {
-        offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f * (w - h), 0.0f, 0.0f));
-    }
-    else
-    {
-        offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f * (h - w), 0.0f));
-    }
-
-    for (unsigned int ii = 0; ii < 64; ++ii )
-    {
-        unsigned int row  = ii / 8;
-        unsigned int col = ii % 8;
-
-
-        glm::mat4 model = glm::translate(offset, glm::vec3(size * row, size * col, 0));
-        glm::mat4 mvp = _projMat * _viewMat * model;
-        _shader->SetUniformMat4f("u_MVP", mvp);
-
-        _shader->SetUniform1i("u_Cell", ii);
-        _shader->SetUniform1f("u_Size", size);
-        _shader->SetUniform2f( "u_CellOrigin", model[3][0], model[3][1] );
-
-        renderer.Draw(*_vao, *_ibo, *_shader);
-    }
+    DrawBoard();
+    DrawPieces();
+    DrawCoordinates();
+    DrawArrows();
 }
 
 // -----------------------------------------------------------------------------
@@ -131,7 +104,10 @@ void TestChess::OnEvent(Event& evt)
         break;
     }
     case EventType::WindowResize:
+    {
         GenerateBoardGLBuffers();
+        GeneratePieceGLBuffers();
+    }
         break;
     default: break;
     }
@@ -153,22 +129,268 @@ void TestChess::GenerateBoardGLBuffers()
     unsigned int indices[] = { 0, 1, 2,
                                2, 3, 0 };
 
-    _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>(cellCoords, 4 * 2 * sizeof(float));
+    _vaob = std::make_unique<VertexArray>();
+    _vbob = std::make_unique<VertexBuffer>(cellCoords, 4 * 2 * sizeof(float));
 
     VertexBufferLayout layout;
     layout.Push<float>(2);
+
+    _vaob->AddBuffer(*_vbob, layout);
+
+    if ( !_ibob )
+        _ibob = std::make_unique<IndexBuffer>(indices, 6);
+
+    if ( !_shaderb )
+    {
+        _shaderb = std::make_unique<Shader>("res/shaders/chess.shader");
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::GeneratePieceGLBuffers()
+{
+    _pieces.clear();
+
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_king, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_queen, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_bishop, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_knight, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_rook, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_pawn, this ) );
+
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_king, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_queen, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_bishop, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_knight, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_rook, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_pawn, this ) );
+
+    if ( !_shaderp )
+    {
+        _shaderp = std::make_unique<Shader>( "res/shaders/chessPiece.shader" );
+    }
+
+    if ( !_texturep )
+    {
+        _texturep = std::make_unique<Texture>( "res/textures/Chess_Pieces_Sprite.png" );
+        _texturep->Bind();
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::DrawBoard()
+{
+    Renderer renderer;
+    _shaderb->Bind();
+
+    int w = 0;
+    int h = 0;
+    _app->GetWindowSize(w, h);
+    _projMat = glm::ortho(0.0f, 1.0f * w, 0.0f, 1.0f * h, -1.0f, 1.0f);
+
+    float size = std::min(w, h) / 8.0f;
+
+    glm::mat4 offset;
+    if (w > h)
+    {
+        offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f * (w - h), 0.0f, 0.0f));
+    }
+    else
+    {
+        offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f * (h - w), 0.0f));
+    }
+
+    for (unsigned int ii = 0; ii < 64; ++ii )
+    {
+        unsigned int row = ii / 8;
+        unsigned int col = ii % 8;
+
+        glm::mat4 model = glm::translate(offset, glm::vec3(size * col, size * row, 0));
+        glm::mat4 mvp = _projMat * _viewMat * model;
+        _shaderb->SetUniformMat4f("u_MVP", mvp);
+
+        _shaderb->SetUniform1i("u_Cell", ii);
+        _shaderb->SetUniform1f("u_Size", size);
+        _shaderb->SetUniform2f( "u_CellOrigin", model[3][0], model[3][1] );
+
+        renderer.Draw(*_vaob, *_ibob, *_shaderb);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::DrawPieces()
+{
+    Renderer renderer;
+    _shaderp->Bind();
+
+    int w = 0;
+    int h = 0;
+    _app->GetWindowSize(w, h);
+    _projMat = glm::ortho(0.0f, 1.0f * w, 0.0f, 1.0f * h, -1.0f, 1.0f);
+
+    float size = std::min(w, h) / 8.0f;
+
+    glm::mat4 offset;
+    if (w > h)
+    {
+        offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f * (w - h), 0.0f, 0.0f));
+    }
+    else
+    {
+        offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f * (h - w), 0.0f));
+    }
+
+    std::string fen( "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" );
+    static std::map<char, int> piece_table{
+        { 'K', 0 },
+        { 'Q', 1 },
+        { 'B', 2 },
+        { 'N', 3 },
+        { 'R', 4 },
+        { 'P', 5 },
+        { 'k', 6 },
+        { 'q', 7 },
+        { 'b', 8 },
+        { 'n', 9 },
+        { 'r', 10 },
+        { 'p', 11 },
+    };
+
+    int square = 0;
+    for ( char c : fen )
+    {
+        if ( square >= 64 )
+            return;
+
+        switch ( c )
+        {
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        {
+            for ( int i = 1; i <= c - '0'; i++ )
+            {
+                square++;
+            }
+            break;
+        }
+        default:
+        {
+            auto it = piece_table.find( c );
+            if ( it != piece_table.end() )
+            {
+                const auto &piece = _pieces[it->second];
+                unsigned int row = square / 8;
+                unsigned int col = square % 8;
+
+                glm::mat4 model = glm::translate( offset, glm::vec3( size * (col + 0.5 * (1.0f - _pieceRelativeSize)),
+                                                                     size * (row + 0.5 * (1.0f - _pieceRelativeSize)), 0 ) );
+                glm::mat4 mvp = _projMat * _viewMat * model;
+                _shaderp->SetUniformMat4f( "u_MVP", mvp );
+
+                _shaderp->SetUniform1i( "u_Texture", 0 );
+
+                renderer.Draw( piece->vao(), piece->ibo(), *_shaderp );
+
+                square++;
+            }
+            break;
+        }
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::DrawCoordinates()
+{
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::DrawArrows()
+{
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+std::array<std::array<float, 8>, 12> TestChess::PieceGL::GetPieceTexCoordinates()
+{
+    constexpr static float dx = 1.0f / 6;
+    constexpr static float dy = 1.0f / 2;
+
+    std::array<std::array<float, 8>, 12> data;
+    using PT = TestChess::PieceGL::Type;
+    auto to_int = []( PT pt ) {return static_cast<int>(pt); };
+
+    data[to_int(PT::white_king)]   = { 0 * dx, 1 * dy, 1 * dx, 1 * dy, 1 * dx, 2 * dy, 0 * dx, 2 * dy };
+    data[to_int(PT::white_queen)]  = { 1 * dx, 1 * dy, 2 * dx, 1 * dy, 2 * dx, 2 * dy, 1 * dx, 2 * dy };
+    data[to_int(PT::white_bishop)] = { 2 * dx, 1 * dy, 3 * dx, 1 * dy, 3 * dx, 2 * dy, 2 * dx, 2 * dy };
+    data[to_int(PT::white_knight)] = { 3 * dx, 1 * dy, 4 * dx, 1 * dy, 4 * dx, 2 * dy, 3 * dx, 2 * dy };
+    data[to_int(PT::white_rook)]   = { 4 * dx, 1 * dy, 5 * dx, 1 * dy, 5 * dx, 2 * dy, 4 * dx, 2 * dy };
+    data[to_int(PT::white_pawn)]   = { 5 * dx, 1 * dy, 6 * dx, 1 * dy, 6 * dx, 2 * dy, 5 * dx, 2 * dy };
+
+    data[to_int(PT::black_king)]   = { 0 * dx, 0 * dy, 1 * dx, 0 * dy, 1 * dx, 1 * dy, 0 * dx, 1 * dy };
+    data[to_int(PT::black_queen)]  = { 1 * dx, 0 * dy, 2 * dx, 0 * dy, 2 * dx, 1 * dy, 1 * dx, 1 * dy };
+    data[to_int(PT::black_bishop)] = { 2 * dx, 0 * dy, 3 * dx, 0 * dy, 3 * dx, 1 * dy, 2 * dx, 1 * dy };
+    data[to_int(PT::black_knight)] = { 3 * dx, 0 * dy, 4 * dx, 0 * dy, 4 * dx, 1 * dy, 3 * dx, 1 * dy };
+    data[to_int(PT::black_rook)]   = { 4 * dx, 0 * dy, 5 * dx, 0 * dy, 5 * dx, 1 * dy, 4 * dx, 1 * dy };
+    data[to_int(PT::black_pawn)]   = { 5 * dx, 0 * dy, 6 * dx, 0 * dy, 6 * dx, 1 * dy, 5 * dx, 1 * dy };
+    return data;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+std::array<std::array<float, 8>, 12> TestChess::PieceGL::s_texCoords =
+                                     TestChess::PieceGL::GetPieceTexCoordinates();
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+TestChess::PieceGL::PieceGL( Type type, TestChess *parent )
+    : _type( type ),
+      _parent( parent )
+{
+    GeneratePieceGLBuffers();
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::PieceGL::GeneratePieceGLBuffers()
+{
+    int w = 0, h = 0;
+    _parent->_app->GetWindowSize(w, h);
+    float size = std::min(w, h) / 8.0f;
+    size *= _parent->_pieceRelativeSize;
+
+    const std::array<float, 8> &texCoord = s_texCoords[static_cast<int>(_type)];
+
+    float cellCoords[] = { 0.0f, 0.0f, texCoord[0], texCoord[1],
+                           size, 0.0f, texCoord[2], texCoord[3],
+                           size, size, texCoord[4], texCoord[5],
+                           0.0f, size, texCoord[6], texCoord[7] };
+
+    unsigned int indices[] = { 0, 1, 2,
+                               2, 3, 0 };
+
+    _vao = std::make_unique<VertexArray>();
+    _vbo = std::make_unique<VertexBuffer>(cellCoords, 4 * 4 * sizeof(float));
+
+    VertexBufferLayout layout;
+    layout.Push<float>(2); // vertex
+    layout.Push<float>(2); // texture coordinate
 
     _vao->AddBuffer(*_vbo, layout);
 
     if ( !_ibo )
         _ibo = std::make_unique<IndexBuffer>(indices, 6);
-
-    if ( !_shader )
-    {
-        _shader = std::make_unique<Shader>("res/shaders/chess.shader");
-        _shader->Bind();
-    }
 }
 
 }
