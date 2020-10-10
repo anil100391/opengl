@@ -50,6 +50,13 @@ void TestChess::OnRender()
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+void TestChess::OnImGuiRender()
+{
+    ImGui::SliderFloat( "Piece Size", &_relativePieceSize, 0.5f, 1.0f );
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 void TestChess::OnEvent(Event& evt)
 {
     auto evtType = evt.GetEventType();
@@ -59,6 +66,8 @@ void TestChess::OnEvent(Event& evt)
     static int startDragX = 0;
     static int startDragY = 0;
 
+    static float curPieceSize = _relativePieceSize;
+
     switch (evtType)
     {
     case EventType::MouseMoved:
@@ -67,26 +76,37 @@ void TestChess::OnEvent(Event& evt)
         dragging = buttonPressed;
         if (dragging)
         {
+            if ( curPieceSize != _relativePieceSize )
+            {
+                GeneratePieceGLBuffers();
+            }
         }
         break;
     }
     case EventType::MouseButtonPressed:
     {
         auto& mouseEvt = static_cast<MousePressedEvent&>(evt);
-        if (mouseEvt.GetButton() == MouseEvent::Button::MIDDLE)
+        if (mouseEvt.GetButton() == MouseEvent::Button::LEFT)
         {
             buttonPressed = true;
             startDragX = mouseEvt.X();
             startDragY = mouseEvt.Y();
         }
+
+        curPieceSize = _relativePieceSize;
         break;
     }
     case EventType::MouseButtonReleased:
     {
         auto& mouseEvt = static_cast<MouseReleasedEvent&>(evt);
-        if (mouseEvt.GetButton() == MouseEvent::Button::MIDDLE)
+        if (mouseEvt.GetButton() == MouseEvent::Button::LEFT)
         {
             buttonPressed = false;
+        }
+
+        if ( curPieceSize != _relativePieceSize )
+        {
+            GeneratePieceGLBuffers();
         }
         break;
     }
@@ -259,10 +279,10 @@ void TestChess::DrawPieces()
         { 'p', 11 },
     };
 
-    int square = 0;
+    int square = 63;
     for ( char c : fen )
     {
-        if ( square >= 64 )
+        if ( square < 0 )
             return;
 
         switch ( c )
@@ -278,7 +298,7 @@ void TestChess::DrawPieces()
         {
             for ( int i = 1; i <= c - '0'; i++ )
             {
-                square++;
+                --square;
             }
             break;
         }
@@ -291,8 +311,8 @@ void TestChess::DrawPieces()
                 unsigned int row = square / 8;
                 unsigned int col = square % 8;
 
-                glm::mat4 model = glm::translate( offset, glm::vec3( size * (col + 0.5 * (1.0f - _pieceRelativeSize)),
-                                                                     size * (row + 0.5 * (1.0f - _pieceRelativeSize)), 0 ) );
+                glm::mat4 model = glm::translate( offset, glm::vec3( size * (col + 0.5 * (1.0f - _relativePieceSize)),
+                                                                     size * (row + 0.5 * (1.0f - _relativePieceSize)), 0 ) );
                 glm::mat4 mvp = _projMat * _viewMat * model;
                 _shaderp->SetUniformMat4f( "u_MVP", mvp );
 
@@ -300,7 +320,7 @@ void TestChess::DrawPieces()
 
                 renderer.Draw( piece->vao(), piece->ibo(), *_shaderp );
 
-                square++;
+                --square;
             }
             break;
         }
@@ -368,7 +388,7 @@ void TestChess::PieceGL::GeneratePieceGLBuffers()
     int w = 0, h = 0;
     _parent->_app->GetWindowSize(w, h);
     float size = std::min(w, h) / 8.0f;
-    size *= _parent->_pieceRelativeSize;
+    size *= _parent->_relativePieceSize;
 
     const std::array<float, 8> &texCoord = s_texCoords[static_cast<int>(_type)];
 

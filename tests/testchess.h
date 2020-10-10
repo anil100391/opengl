@@ -23,15 +23,12 @@ class TestChess : public Test
 {
 public:
 
-    class PieceGL;
-    friend class PieceGL;
-
     TestChess(Application *app);
     virtual ~TestChess();
 
     virtual void OnUpdate(float deltaTime) override {}
     virtual void OnRender() override;
-    virtual void OnImGuiRender() override {}
+    virtual void OnImGuiRender() override;
     virtual void OnEvent(Event& evt) override;
 
 private:
@@ -69,6 +66,8 @@ private:
         std::unique_ptr<IndexBuffer>    _ibo;
     };
 
+    friend class PieceGL;
+
     // generate gl buffers
     void GenerateBoardGLBuffers();
     void GeneratePieceGLBuffers();
@@ -94,7 +93,7 @@ private:
     glm::mat4                       _projMat;
 
     // parameters
-    float _pieceRelativeSize = 0.8f;
+    float _relativePieceSize = 0.8f;
 };
 
 }
