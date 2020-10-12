@@ -93,7 +93,7 @@ private:
     glm::mat4                       _projMat;
 
     // parameters
-    float _relativePieceSize = 0.8f;
+    float                           _relativePieceSize = 0.95f;
 };
 
 }

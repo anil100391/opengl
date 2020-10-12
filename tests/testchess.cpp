@@ -79,6 +79,7 @@ void TestChess::OnEvent(Event& evt)
             if ( curPieceSize != _relativePieceSize )
             {
                 GeneratePieceGLBuffers();
+                curPieceSize = _relativePieceSize;
             }
         }
         break;
@@ -107,6 +108,7 @@ void TestChess::OnEvent(Event& evt)
         if ( curPieceSize != _relativePieceSize )
         {
             GeneratePieceGLBuffers();
+            curPieceSize = _relativePieceSize;
         }
         break;
     }
@@ -263,7 +265,8 @@ void TestChess::DrawPieces()
         offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f * (h - w), 0.0f));
     }
 
-    std::string fen( "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" );
+    // std::string fen( "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" );
+    std::string fen( "r2q1rk1/pppb1pbp/2np1np1/8/2PpP3/2N1BN1P/PP1QBPP1/R3K2R w KQ - 0 10" );
     static std::map<char, int> piece_table{
         { 'K', 0 },
         { 'Q', 1 },
@@ -279,10 +282,10 @@ void TestChess::DrawPieces()
         { 'p', 11 },
     };
 
-    int square = 63;
+    int square_cnt = 63;
     for ( char c : fen )
     {
-        if ( square < 0 )
+        if ( square_cnt < 0 )
             return;
 
         switch ( c )
@@ -298,7 +301,7 @@ void TestChess::DrawPieces()
         {
             for ( int i = 1; i <= c - '0'; i++ )
             {
-                --square;
+                --square_cnt;
             }
             break;
         }
@@ -308,8 +311,9 @@ void TestChess::DrawPieces()
             if ( it != piece_table.end() )
             {
                 const auto &piece = _pieces[it->second];
-                unsigned int row = square / 8;
-                unsigned int col = square % 8;
+
+                int row = square_cnt / 8;
+                int col = 7 - square_cnt % 8;
 
                 glm::mat4 model = glm::translate( offset, glm::vec3( size * (col + 0.5 * (1.0f - _relativePieceSize)),
                                                                      size * (row + 0.5 * (1.0f - _relativePieceSize)), 0 ) );
@@ -320,7 +324,7 @@ void TestChess::DrawPieces()
 
                 renderer.Draw( piece->vao(), piece->ibo(), *_shaderp );
 
-                --square;
+                --square_cnt;
             }
             break;
         }
@@ -349,7 +353,7 @@ std::array<std::array<float, 8>, 12> TestChess::PieceGL::GetPieceTexCoordinates(
 
     std::array<std::array<float, 8>, 12> data;
     using PT = TestChess::PieceGL::Type;
-    auto to_int = []( PT pt ) {return static_cast<int>(pt); };
+    auto to_int = []( PT pt ) { return static_cast<int>(pt); };
 
     data[to_int(PT::white_king)]   = { 0 * dx, 1 * dy, 1 * dx, 1 * dy, 1 * dx, 2 * dy, 0 * dx, 2 * dy };
     data[to_int(PT::white_queen)]  = { 1 * dx, 1 * dy, 2 * dx, 1 * dy, 2 * dx, 2 * dy, 1 * dx, 2 * dy };
