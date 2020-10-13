@@ -33,6 +33,8 @@ layout(location = 0) out vec4 color;
 uniform int u_Cell;
 uniform float u_Size;
 uniform vec2 u_CellOrigin;
+uniform vec4 u_Dark;
+uniform vec4 u_Light;
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -61,11 +63,11 @@ void main()
         coord += 1.0f;
         coord *= 8.0f;
         float fac = plot( coord );
-        color = (1.0f - fac) * vec4( 0.7, 0.7, 0.7, 1.0f ) + fac * vec4( 0.2, 0.2, 0.2, 1.0f );
+        color = (1.0f - fac) * u_Light + fac * u_Dark;
     }
     else
     {
-        color = vec4( 1.0, 1.0, 1.0, 1.0f );
+        color = u_Light;
     }
 }
 

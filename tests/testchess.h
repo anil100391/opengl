@@ -94,6 +94,8 @@ private:
 
     // parameters
     float                           _relativePieceSize = 0.95f;
+    glm::vec4                       _darkColor = {0.2f, 0.2f, 0.2f, 1.0f};
+    glm::vec4                       _lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
 };
 
 }

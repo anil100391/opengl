@@ -53,6 +53,8 @@ void TestChess::OnRender()
 void TestChess::OnImGuiRender()
 {
     ImGui::SliderFloat( "Piece Size", &_relativePieceSize, 0.5f, 1.0f );
+    ImGui::ColorEdit4("Dark Square", &_darkColor[0]);
+    ImGui::ColorEdit4("Light Square", &_lightColor[0]);
 }
 
 // -----------------------------------------------------------------------------
@@ -236,6 +238,8 @@ void TestChess::DrawBoard()
         _shaderb->SetUniform1i("u_Cell", ii);
         _shaderb->SetUniform1f("u_Size", size);
         _shaderb->SetUniform2f( "u_CellOrigin", model[3][0], model[3][1] );
+        _shaderb->SetUniform4f("u_Dark", _darkColor);
+        _shaderb->SetUniform4f("u_Light", _lightColor);
 
         renderer.Draw(*_vaob, *_ibob, *_shaderb);
     }
