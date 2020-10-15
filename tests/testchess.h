@@ -14,6 +14,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "chess/board.h"
+
 namespace test
 {
 
@@ -78,6 +80,29 @@ private:
     void DrawCoordinates();
     void DrawArrows();
 
+    PieceGL* GetGLPiece(cpiece::PIECE piece)
+    {
+        auto toint = [](PieceGL::Type type)->int {return static_cast<int>(type);};
+        switch ( piece )
+        {
+            case cpiece::PIECE::wking:     return _pieces[toint(PieceGL::Type::white_king)].get();
+            case cpiece::PIECE::wqueen:    return _pieces[toint(PieceGL::Type::white_queen)].get();
+            case cpiece::PIECE::wbishop:   return _pieces[toint(PieceGL::Type::white_bishop)].get();
+            case cpiece::PIECE::wknight:   return _pieces[toint(PieceGL::Type::white_knight)].get();
+            case cpiece::PIECE::wrook:     return _pieces[toint(PieceGL::Type::white_rook)].get();
+            case cpiece::PIECE::wpawn:     return _pieces[toint(PieceGL::Type::white_pawn)].get();
+            case cpiece::PIECE::bking:     return _pieces[toint(PieceGL::Type::black_king)].get();
+            case cpiece::PIECE::bqueen:    return _pieces[toint(PieceGL::Type::black_queen)].get();
+            case cpiece::PIECE::bbishop:   return _pieces[toint(PieceGL::Type::black_bishop)].get();
+            case cpiece::PIECE::bknight:   return _pieces[toint(PieceGL::Type::black_knight)].get();
+            case cpiece::PIECE::brook:     return _pieces[toint(PieceGL::Type::black_rook)].get();
+            case cpiece::PIECE::bpawn:     return _pieces[toint(PieceGL::Type::black_pawn)].get();
+            default: return nullptr;
+        }
+
+        return nullptr;
+    }
+
     // board gl objects
     std::unique_ptr<VertexArray>    _vaob;
     std::unique_ptr<VertexBuffer>   _vbob;
@@ -96,6 +121,8 @@ private:
     float                           _relativePieceSize = 0.95f;
     glm::vec4                       _darkColor = {0.2f, 0.2f, 0.2f, 1.0f};
     glm::vec4                       _lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    cboard                          _board;
 };
 
 }

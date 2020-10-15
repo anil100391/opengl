@@ -22,6 +22,8 @@ TestChess::TestChess(Application *app)
       _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f))
 {
+    _board.setBoard("r2q1rk1/pppb1pbp/2np1np1/8/2PpP3/2N1BN1P/PP1QBPP1/R3K2R w KQ - 0 10" );
+
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
@@ -269,70 +271,24 @@ void TestChess::DrawPieces()
         offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f * (h - w), 0.0f));
     }
 
-    // std::string fen( "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" );
-    std::string fen( "r2q1rk1/pppb1pbp/2np1np1/8/2PpP3/2N1BN1P/PP1QBPP1/R3K2R w KQ - 0 10" );
-    static std::map<char, int> piece_table{
-        { 'K', 0 },
-        { 'Q', 1 },
-        { 'B', 2 },
-        { 'N', 3 },
-        { 'R', 4 },
-        { 'P', 5 },
-        { 'k', 6 },
-        { 'q', 7 },
-        { 'b', 8 },
-        { 'n', 9 },
-        { 'r', 10 },
-        { 'p', 11 },
-    };
-
-    int square_cnt = 63;
-    for ( char c : fen )
+    for ( int square = 0; square < 64; ++square )
     {
-        if ( square_cnt < 0 )
-            return;
+        const cpiece& piece = _board[square];
+        if ( piece.getType() == cpiece::PIECE::none )
+            continue;
 
-        switch ( c )
-        {
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        {
-            for ( int i = 1; i <= c - '0'; i++ )
-            {
-                --square_cnt;
-            }
-            break;
-        }
-        default:
-        {
-            auto it = piece_table.find( c );
-            if ( it != piece_table.end() )
-            {
-                const auto &piece = _pieces[it->second];
+        int row = 7 - square / 8;
+        int col = square % 8;
 
-                int row = square_cnt / 8;
-                int col = 7 - square_cnt % 8;
+        glm::mat4 model = glm::translate( offset, glm::vec3( size * (col + 0.5 * (1.0f - _relativePieceSize)),
+                    size * (row + 0.5 * (1.0f - _relativePieceSize)), 0 ) );
+        glm::mat4 mvp = _projMat * _viewMat * model;
+        _shaderp->SetUniformMat4f( "u_MVP", mvp );
 
-                glm::mat4 model = glm::translate( offset, glm::vec3( size * (col + 0.5 * (1.0f - _relativePieceSize)),
-                                                                     size * (row + 0.5 * (1.0f - _relativePieceSize)), 0 ) );
-                glm::mat4 mvp = _projMat * _viewMat * model;
-                _shaderp->SetUniformMat4f( "u_MVP", mvp );
+        _shaderp->SetUniform1i( "u_Texture", 0 );
 
-                _shaderp->SetUniform1i( "u_Texture", 0 );
-
-                renderer.Draw( piece->vao(), piece->ibo(), *_shaderp );
-
-                --square_cnt;
-            }
-            break;
-        }
-        }
+        PieceGL *pgl = GetGLPiece(piece.getType());
+        renderer.Draw( pgl->vao(), pgl->ibo(), *_shaderp );
     }
 }
 
