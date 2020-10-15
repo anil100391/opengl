@@ -377,4 +377,18 @@ void TestChess::PieceGL::GeneratePieceGLBuffers()
         _ibo = std::make_unique<IndexBuffer>(indices, 6);
 }
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::OnUpdate(float time)
+{
+    static float lastMoveTime = time;
+    if ( time > lastMoveTime + 2 )
+    {
+        auto moves = _board.generateMoves();
+        if ( !moves.empty() )
+            _board.makeMove(moves.back());
+        lastMoveTime = time;
+    }
+}
+
 }
