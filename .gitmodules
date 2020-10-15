@@ -1,3 +1,6 @@
 [submodule "vendor/glm"]
 	path = vendor/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "tests/chess"]
+	path = tests/chess
+	url = https://github.com/anil100391/chess.git
