@@ -80,23 +80,23 @@ private:
     void DrawCoordinates();
     void DrawArrows();
 
-    PieceGL* GetGLPiece(cpiece::PIECE piece)
+    PieceGL* GetGLPiece(cpiece::TYPE piece)
     {
         auto toint = [](PieceGL::Type type)->int {return static_cast<int>(type);};
         switch ( piece )
         {
-            case cpiece::PIECE::wking:     return _pieces[toint(PieceGL::Type::white_king)].get();
-            case cpiece::PIECE::wqueen:    return _pieces[toint(PieceGL::Type::white_queen)].get();
-            case cpiece::PIECE::wbishop:   return _pieces[toint(PieceGL::Type::white_bishop)].get();
-            case cpiece::PIECE::wknight:   return _pieces[toint(PieceGL::Type::white_knight)].get();
-            case cpiece::PIECE::wrook:     return _pieces[toint(PieceGL::Type::white_rook)].get();
-            case cpiece::PIECE::wpawn:     return _pieces[toint(PieceGL::Type::white_pawn)].get();
-            case cpiece::PIECE::bking:     return _pieces[toint(PieceGL::Type::black_king)].get();
-            case cpiece::PIECE::bqueen:    return _pieces[toint(PieceGL::Type::black_queen)].get();
-            case cpiece::PIECE::bbishop:   return _pieces[toint(PieceGL::Type::black_bishop)].get();
-            case cpiece::PIECE::bknight:   return _pieces[toint(PieceGL::Type::black_knight)].get();
-            case cpiece::PIECE::brook:     return _pieces[toint(PieceGL::Type::black_rook)].get();
-            case cpiece::PIECE::bpawn:     return _pieces[toint(PieceGL::Type::black_pawn)].get();
+            case cpiece::wking:     return _pieces[toint(PieceGL::Type::white_king)].get();
+            case cpiece::wqueen:    return _pieces[toint(PieceGL::Type::white_queen)].get();
+            case cpiece::wbishop:   return _pieces[toint(PieceGL::Type::white_bishop)].get();
+            case cpiece::wknight:   return _pieces[toint(PieceGL::Type::white_knight)].get();
+            case cpiece::wrook:     return _pieces[toint(PieceGL::Type::white_rook)].get();
+            case cpiece::wpawn:     return _pieces[toint(PieceGL::Type::white_pawn)].get();
+            case cpiece::bking:     return _pieces[toint(PieceGL::Type::black_king)].get();
+            case cpiece::bqueen:    return _pieces[toint(PieceGL::Type::black_queen)].get();
+            case cpiece::bbishop:   return _pieces[toint(PieceGL::Type::black_bishop)].get();
+            case cpiece::bknight:   return _pieces[toint(PieceGL::Type::black_knight)].get();
+            case cpiece::brook:     return _pieces[toint(PieceGL::Type::black_rook)].get();
+            case cpiece::bpawn:     return _pieces[toint(PieceGL::Type::black_pawn)].get();
             default: return nullptr;
         }
 

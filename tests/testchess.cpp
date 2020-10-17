@@ -22,7 +22,9 @@ TestChess::TestChess(Application *app)
       _viewMat(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))),
       _projMat(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f))
 {
-    _board.setBoard("r2q1rk1/pppb1pbp/2np1np1/8/2PpP3/2N1BN1P/PP1QBPP1/R3K2R w KQ - 0 10" );
+    const char *pos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    // const char *pos= "r2q1rk1/pppb1pbp/2np1np1/8/2PpP3/2N1BN1P/PP1QBPP1/R3K2R w KQ - 0 10"
+    _board.setBoard( pos );
 
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -274,10 +276,10 @@ void TestChess::DrawPieces()
     for ( int square = 0; square < 64; ++square )
     {
         const cpiece& piece = _board[square];
-        if ( piece.getType() == cpiece::PIECE::none )
+        if ( piece.getType() == cpiece::none )
             continue;
 
-        int row = 7 - square / 8;
+        int row = square / 8;
         int col = square % 8;
 
         glm::mat4 model = glm::translate( offset, glm::vec3( size * (col + 0.5 * (1.0f - _relativePieceSize)),
@@ -385,8 +387,13 @@ void TestChess::OnUpdate(float time)
     if ( time > lastMoveTime + 2 )
     {
         auto moves = _board.generateMoves();
+
+        float r = (1.0f * rand()) / RAND_MAX;
+        size_t randomMove = static_cast<size_t>(r * moves.size());
+        randomMove = std::clamp( randomMove, 0ull, moves.size() - 1 );
+
         if ( !moves.empty() )
-            _board.makeMove(moves.back());
+            _board.makeMove( moves.at( randomMove ) );
         lastMoveTime = time;
     }
 }
