@@ -202,6 +202,13 @@ void Application::GetWindowSize(int &width, int &height) const noexcept
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+float Application::GetCurrentTime() const noexcept
+{
+    return glfwGetTime();
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Application::OnEvent( Event &evt )
 {
     return true;

@@ -103,6 +103,11 @@ private:
         return nullptr;
     }
 
+    void MakeEngineMove();
+
+    // pick helpers
+    int SquareAt( int x, int y ) const;
+
     // board gl objects
     std::unique_ptr<VertexArray>    _vaob;
     std::unique_ptr<VertexBuffer>   _vbob;
@@ -121,8 +126,15 @@ private:
     float                           _relativePieceSize = 0.95f;
     glm::vec4                       _darkColor = {0.2f, 0.2f, 0.2f, 1.0f};
     glm::vec4                       _lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    glm::vec4                       _highlightColor = {0.75f, 0.75f, 0.25f, 1.0f};
 
     cboard                          _board;
+    std::unique_ptr<cmove>          _lastMove;
+    float                           _lastMoveTime = 0.0f;
+
+    int                             _pickStartSq = -1;
+    bool                            _engineTurn = false;
+    PieceGL                         *_draggingPiece = nullptr;
 };
 
 }

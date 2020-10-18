@@ -36,6 +36,7 @@ public:
     virtual void Update();
 
     void GetWindowSize(int &width, int &height) const noexcept;
+    float GetCurrentTime() const noexcept;
 
     virtual bool OnEvent( Event &evt );
 

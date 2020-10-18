@@ -59,6 +59,7 @@ void TestChess::OnImGuiRender()
     ImGui::SliderFloat( "Piece Size", &_relativePieceSize, 0.5f, 1.0f );
     ImGui::ColorEdit4("Dark Square", &_darkColor[0]);
     ImGui::ColorEdit4("Light Square", &_lightColor[0]);
+    ImGui::ColorEdit4("Highlight Square", &_highlightColor[0]);
 }
 
 // -----------------------------------------------------------------------------
@@ -98,6 +99,7 @@ void TestChess::OnEvent(Event& evt)
             buttonPressed = true;
             startDragX = mouseEvt.X();
             startDragY = mouseEvt.Y();
+            _pickStartSq = SquareAt( mouseEvt.X(), mouseEvt.Y() );
         }
 
         curPieceSize = _relativePieceSize;
@@ -109,6 +111,19 @@ void TestChess::OnEvent(Event& evt)
         if (mouseEvt.GetButton() == MouseEvent::Button::LEFT)
         {
             buttonPressed = false;
+            if ( _pickStartSq != -1 )
+            {
+                int dropSq = SquareAt( mouseEvt.X(), mouseEvt.Y() );
+                if ( dropSq != -1 )
+                {
+                    if ( _board.makeMove( _pickStartSq, dropSq ) )
+                    {
+                        _lastMove = std::make_unique<cmove>( _pickStartSq, dropSq );
+                        _lastMoveTime = _app->GetCurrentTime();
+                        _engineTurn = true;
+                    }
+                }
+            }
         }
 
         if ( curPieceSize != _relativePieceSize )
@@ -240,10 +255,13 @@ void TestChess::DrawBoard()
         _shaderb->SetUniformMat4f("u_MVP", mvp);
 
         _shaderb->SetUniform1i("u_Cell", ii);
+        _shaderb->SetUniform1i("u_LastMoveFrom", _lastMove ? _lastMove->getfromSq() : -1);
+        _shaderb->SetUniform1i("u_LastMoveTo", _lastMove ? _lastMove->gettoSq() : -1);
         _shaderb->SetUniform1f("u_Size", size);
         _shaderb->SetUniform2f( "u_CellOrigin", model[3][0], model[3][1] );
         _shaderb->SetUniform4f("u_Dark", _darkColor);
         _shaderb->SetUniform4f("u_Light", _lightColor);
+        _shaderb->SetUniform4f("u_Highlight", _highlightColor);
 
         renderer.Draw(*_vaob, *_ibob, *_shaderb);
     }
@@ -304,6 +322,54 @@ void TestChess::DrawCoordinates()
 // -----------------------------------------------------------------------------
 void TestChess::DrawArrows()
 {
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::MakeEngineMove()
+{
+    auto moves = _board.generateMoves();
+
+    float r = (1.0f * rand()) / RAND_MAX;
+    size_t randomMove = static_cast<size_t>(r * moves.size());
+    randomMove = std::clamp( randomMove, 0ull, moves.size() - 1 );
+
+    if ( !moves.empty() )
+    {
+        _lastMove = std::make_unique<cmove>( moves.at( randomMove ) );
+        _lastMoveTime = _app->GetCurrentTime();
+        _board.makeMove( *_lastMove );
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+int TestChess::SquareAt( int x, int y ) const
+{
+    int w = 0;
+    int h = 0;
+    _app->GetWindowSize(w, h);
+
+    y = h - y;
+
+    float size = std::min(w, h) / 8.0f;
+
+    float xoffset = 0;
+    float yoffset = 0;
+
+    if (w > h)
+        xoffset = 0.5f * (w - h);
+    else
+        yoffset = 0.5f * (h - w);
+
+    int rank = (y - yoffset) / size;
+    int file = (x - xoffset) / size;
+
+    int sq = rank * 8 + file;
+    if ( sq >= 0 && sq < 64 )
+        return sq;
+
+    return -1;
 }
 
 // -----------------------------------------------------------------------------
@@ -383,18 +449,10 @@ void TestChess::PieceGL::GeneratePieceGLBuffers()
 // -----------------------------------------------------------------------------
 void TestChess::OnUpdate(float time)
 {
-    static float lastMoveTime = time;
-    if ( time > lastMoveTime + 2 )
+    if ( _engineTurn && time > _lastMoveTime + 1 )
     {
-        auto moves = _board.generateMoves();
-
-        float r = (1.0f * rand()) / RAND_MAX;
-        size_t randomMove = static_cast<size_t>(r * moves.size());
-        randomMove = std::clamp( randomMove, 0ull, moves.size() - 1 );
-
-        if ( !moves.empty() )
-            _board.makeMove( moves.at( randomMove ) );
-        lastMoveTime = time;
+        MakeEngineMove();
+        _engineTurn = false;
     }
 }
 
