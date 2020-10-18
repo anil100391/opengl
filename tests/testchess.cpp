@@ -390,7 +390,7 @@ void TestChess::OnUpdate(float time)
 
         float r = (1.0f * rand()) / RAND_MAX;
         size_t randomMove = static_cast<size_t>(r * moves.size());
-        randomMove = std::clamp( randomMove, 0ull, moves.size() - 1 );
+        randomMove = std::clamp( randomMove, size_t(0ull), size_t(moves.size() - 1) );
 
         if ( !moves.empty() )
             _board.makeMove( moves.at( randomMove ) );
