@@ -100,6 +100,11 @@ void TestChess::OnEvent(Event& evt)
             startDragX = mouseEvt.X();
             startDragY = mouseEvt.Y();
             _pickStartSq = SquareAt( mouseEvt.X(), mouseEvt.Y() );
+            if ( _pickStartSq >= 0 && _pickStartSq < 64 )
+            {
+                const cpiece &p = _board[_pickStartSq];
+                _draggingPiece = GetGLPiece( p.getType() );
+            }
         }
 
         curPieceSize = _relativePieceSize;
@@ -124,6 +129,8 @@ void TestChess::OnEvent(Event& evt)
                     }
                 }
             }
+            _pickStartSq = -1;
+            _draggingPiece = nullptr;
         }
 
         if ( curPieceSize != _relativePieceSize )
@@ -301,7 +308,14 @@ void TestChess::DrawPieces()
         int col = square % 8;
 
         glm::mat4 model = glm::translate( offset, glm::vec3( size * (col + 0.5 * (1.0f - _relativePieceSize)),
-                    size * (row + 0.5 * (1.0f - _relativePieceSize)), 0 ) );
+                                          size * (row + 0.5 * (1.0f - _relativePieceSize)), 0 ) );
+
+        if ( _pickStartSq == square && _draggingPiece )
+        {
+            // to be drawn in the end
+            continue;
+        }
+
         glm::mat4 mvp = _projMat * _viewMat * model;
         _shaderp->SetUniformMat4f( "u_MVP", mvp );
 
@@ -309,6 +323,21 @@ void TestChess::DrawPieces()
 
         PieceGL *pgl = GetGLPiece(piece.getType());
         renderer.Draw( pgl->vao(), pgl->ibo(), *_shaderp );
+    }
+
+
+    if ( _draggingPiece )
+    {
+        double mouseX = 0.0, mouseY = 0.0;
+        _app->GetCursorPosition( mouseX, mouseY );
+        glm::mat4 model = glm::translate( glm::mat4( 1.0f ), glm::vec3( mouseX - 0.5 * size, h - mouseY - 0.5 * size, 0.0 ) );
+
+        glm::mat4 mvp = _projMat * _viewMat * model;
+        _shaderp->SetUniformMat4f( "u_MVP", mvp );
+
+        _shaderp->SetUniform1i( "u_Texture", 0 );
+
+        renderer.Draw( _draggingPiece->vao(), _draggingPiece->ibo(), *_shaderp );
     }
 }
 

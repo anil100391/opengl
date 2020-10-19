@@ -37,6 +37,7 @@ public:
 
     void GetWindowSize(int &width, int &height) const noexcept;
     float GetCurrentTime() const noexcept;
+    void GetCursorPosition(double &x, double &y) const noexcept;
 
     virtual bool OnEvent( Event &evt );
 

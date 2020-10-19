@@ -209,6 +209,13 @@ float Application::GetCurrentTime() const noexcept
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+void Application::GetCursorPosition( double &x, double &y ) const noexcept
+{
+    glfwGetCursorPos( _window, &x, &y );
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 bool Application::OnEvent( Event &evt )
 {
     return true;
