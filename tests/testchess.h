@@ -15,6 +15,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "chess/board.h"
+#include <irrKlang.h>
 
 namespace test
 {
@@ -135,6 +136,7 @@ private:
     int                             _pickStartSq = -1;
     bool                            _engineTurn = false;
     PieceGL                         *_draggingPiece = nullptr;
+    irrklang::ISoundEngine          *_soundEngine = nullptr;
 };
 
 }

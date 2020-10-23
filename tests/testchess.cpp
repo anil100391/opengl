@@ -31,12 +31,18 @@ TestChess::TestChess(Application *app)
 
     GenerateBoardGLBuffers();
     GeneratePieceGLBuffers();
+
+    // initialize irrKlang for audio
+    _soundEngine = irrklang::createIrrKlangDevice();
+    _soundEngine->play2D("res/sounds/gong.wav", false);
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 TestChess::~TestChess()
 {
+    _soundEngine->drop();
+    _soundEngine = nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -123,6 +129,10 @@ void TestChess::OnEvent(Event& evt)
                 {
                     if ( _board.makeMove( _pickStartSq, dropSq ) )
                     {
+                        if ( _board.isInCheck(_board.sideToMove() ) )
+                            _soundEngine->play2D("res/sounds/cymbal.wav", false);
+                        else
+                            _soundEngine->play2D("res/sounds/woodthunk.wav", false);
                         _lastMove = std::make_unique<cmove>( _pickStartSq, dropSq );
                         _lastMoveTime = _app->GetCurrentTime();
                         _engineTurn = true;
@@ -368,6 +378,10 @@ void TestChess::MakeEngineMove()
         _lastMove = std::make_unique<cmove>( moves.at( randomMove ) );
         _lastMoveTime = _app->GetCurrentTime();
         _board.makeMove( *_lastMove );
+        if ( _board.isInCheck(_board.sideToMove() ) )
+            _soundEngine->play2D("res/sounds/cymbal.wav", false);
+        else
+            _soundEngine->play2D("res/sounds/woodthunk.wav", false);
     }
 }
 

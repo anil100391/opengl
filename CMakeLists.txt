@@ -12,6 +12,9 @@ find_package(glfw3 CONFIG REQUIRED)
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/imgui")
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/glm")
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/stb_image")
+include_directories ("${PROJECT_SOURCE_DIR}/vendor/irrKlang/include")
+
+link_directories ("${PROJECT_SOURCE_DIR}/vendor/irrKlang/lib")
 
 file (GLOB tests_src "${PROJECT_SOURCE_DIR}/tests/*.cpp" )
 file (GLOB chess_src "${PROJECT_SOURCE_DIR}/tests/chess/board.cpp" )
@@ -28,8 +31,8 @@ add_compile_options(-D_USE_MATH_DEFINES)
 add_executable (app vendor/stb_image/stb_image.cpp ${imgui_src} ${utils_src} ${chess_src} ${tests_src} ${main_src})
 
 if (MSVC)
-    target_link_libraries (app PRIVATE glfw GLEW::GLEW opengl32)
+    target_link_libraries (app PRIVATE glfw GLEW::GLEW opengl32 irrKlang.lib)
 else()
-    target_link_libraries (app GL glfw GLEW)
+    target_link_libraries (app GL glfw GLEW IrrKlang)
 endif()
 
