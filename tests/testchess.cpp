@@ -62,10 +62,13 @@ void TestChess::OnRender()
 // -----------------------------------------------------------------------------
 void TestChess::OnImGuiRender()
 {
-    ImGui::SliderFloat( "Piece Size", &_relativePieceSize, 0.5f, 1.0f );
-    ImGui::ColorEdit4("Dark Square", &_darkColor[0]);
-    ImGui::ColorEdit4("Light Square", &_lightColor[0]);
-    ImGui::ColorEdit4("Highlight Square", &_highlightColor[0]);
+    if ( ImGui::CollapsingHeader( "Tweaks" ) )
+    {
+        ImGui::SliderFloat( "Piece Size", &_relativePieceSize, 0.5f, 1.0f );
+        ImGui::ColorEdit4( "Dark Square", &_darkColor[0] );
+        ImGui::ColorEdit4( "Light Square", &_lightColor[0] );
+        ImGui::ColorEdit4( "Highlight Square", &_highlightColor[0] );
+    }
 }
 
 // -----------------------------------------------------------------------------

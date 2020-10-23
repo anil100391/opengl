@@ -22,11 +22,17 @@ TestMenu::~TestMenu()
 // -----------------------------------------------------------------------------
 void TestMenu::OnImGuiRender()
 {
-    for ( auto& test : _tests )
+    ImGui::SetNextItemOpen( true );
+    if ( ImGui::CollapsingHeader("Tests") )
     {
-        if (ImGui::Button(test.first.c_str()))
+        for ( auto& test : _tests )
         {
-            _currentTest = test.second();
+            ImGui::SetNextItemOpen( false );
+            if (ImGui::TreeNode(test.first.c_str()))
+            {
+                _currentTest = test.second();
+                ImGui::TreePop();
+            }
         }
     }
 }

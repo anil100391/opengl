@@ -43,12 +43,15 @@ private:
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestsApplication::TestsApplication() : Application()
+TestsApplication::TestsApplication() : Application( {1920, 1080, "TESTS"} )
 {
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL( _window, true );
     ImGui_ImplOpenGL3_Init( glsl_version );
+
+    auto &io = ImGui::GetIO();
+    auto font = io.Fonts->AddFontFromFileTTF( "res/fonts/Open_Sans/OpenSans-Regular.ttf", 14.0f );
 
     auto& style = ImGui::GetStyle();
     style.ChildRounding     = 0.0f;
@@ -68,7 +71,7 @@ TestsApplication::TestsApplication() : Application()
     _testMenu->RegisterTest<test::TestClearColor>( "Clear Color" );
     _testMenu->RegisterTest<test::TestTexture2D>( "2D Texture" );
     _testMenu->RegisterTest<test::TestObjLoader>( "Obj Viewer" );
-    _testMenu->RegisterTest<test::TestFragmentShader>( "FragmentShader" );
+    _testMenu->RegisterTest<test::TestFragmentShader>( "Fractals" );
     _testMenu->RegisterTest<test::TestChess>( "Chess" );
     _testMenu->RegisterTest<test::TestGame>( "Game" );
 }
@@ -101,25 +104,26 @@ void TestsApplication::Update()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    if ( ImGui::CollapsingHeader("Render Statistics") )
     {
         ImGui::Text( "Application average %.3f ms/frame (%.1f FPS)",
                      1000.0f / ImGui::GetIO().Framerate,
                      ImGui::GetIO().Framerate );
     }
 
+    ImGui::Separator();
+
     if ( _currentTest )
     {
         double time = glfwGetTime();
         _currentTest->OnUpdate( time );
         _currentTest->OnRender();
-        ImGui::Begin( "Test" );
         if ( _currentTest != _testMenu && ImGui::Button( "< " ) )
         {
             delete _currentTest;
             _currentTest = _testMenu;
         }
         _currentTest->OnImGuiRender();
-        ImGui::End();
     }
 
     ImGui::Render();
