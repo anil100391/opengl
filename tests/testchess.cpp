@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <map>
+#include <ctime>
 
 #include "testchess.h"
 #include "../renderer.h"
@@ -414,6 +415,13 @@ void TestChess::DrawArrows()
 void TestChess::MakeEngineMove()
 {
     auto moves = _board.generateMoves();
+
+    static bool rngInit = false;
+    if ( !rngInit )
+    {
+        rngInit = true;
+        srand( time( 0 ) );
+    }
 
     float r = (1.0f * rand()) / RAND_MAX;
     size_t randomMove = static_cast<size_t>(r * moves.size());
