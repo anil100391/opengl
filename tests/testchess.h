@@ -132,6 +132,8 @@ private:
     cboard                          _board;
     std::unique_ptr<cmove>          _lastMove;
     float                           _lastMoveTime = 0.0f;
+    int                             _currentPly = -1;
+    int                             _latestPly = -1;
 
     int                             _pickStartSq = -1;
     bool                            _engineTurn = false;

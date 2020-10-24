@@ -51,7 +51,7 @@ TestsApplication::TestsApplication() : Application( {1920, 1080, "TESTS"} )
     ImGui_ImplOpenGL3_Init( glsl_version );
 
     auto &io = ImGui::GetIO();
-    auto font = io.Fonts->AddFontFromFileTTF( "res/fonts/Open_Sans/OpenSans-Regular.ttf", 14.0f );
+    auto font = io.Fonts->AddFontFromFileTTF( "res/fonts/Open_Sans/OpenSans-Regular.ttf", 16.0f );
 
     auto& style = ImGui::GetStyle();
     style.ChildRounding     = 0.0f;
@@ -103,6 +103,8 @@ void TestsApplication::Update()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    // ImGui::ShowDemoWindow();
 
     if ( ImGui::CollapsingHeader("Render Statistics") )
     {

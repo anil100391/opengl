@@ -69,6 +69,41 @@ void TestChess::OnImGuiRender()
         ImGui::ColorEdit4( "Light Square", &_lightColor[0] );
         ImGui::ColorEdit4( "Highlight Square", &_highlightColor[0] );
     }
+
+    ImGui::SetNextItemOpen( true );
+    if ( ImGui::CollapsingHeader( "Moves" ) )
+    {
+        for ( int ii = 0; ii <= _latestPly; ++ii )
+        {
+            const auto &state = _board.getBoardStateAt( ii );
+            std::string moveStr = state.toString();
+            if ( ii % 2 == 0 )
+                ImGui::Bullet();
+
+            // ImGui::SmallButton( moveStr.c_str(), ImVec2( 32, 20 ) );
+            // ImGui::PushID( ii );
+            // ImGui::PushStyleColor( ImGuiCol_Button, (ImVec4)ImColor::HSV( i / 7.0f, 0.6f, 0.6f ) );
+            // ImGui::PushStyleColor( ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV( i / 7.0f, 0.7f, 0.7f ) );
+            // ImGui::PushStyleColor( ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV( i / 7.0f, 0.8f, 0.8f ) );
+            if ( ImGui::Button( moveStr.c_str(), ImVec2(32, 20) ) )
+            {
+                if ( ii < _latestPly )
+                    _board.goToPly( ii + 1 );
+                else
+                {
+                    _board.goToPly( ii );
+                    _board.makeMove( _board.getBoardStateAt( ii )._movePlayed );
+                }
+                _currentPly = ii;
+            }
+
+            if ( ii % 2 == 0 )
+                ImGui::SameLine();
+
+            // ImGui::PopStyleColor( 3 );
+            // ImGui::PopID();
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -132,6 +167,9 @@ void TestChess::OnEvent(Event& evt)
                 {
                     if ( _board.makeMove( _pickStartSq, dropSq ) )
                     {
+                        ++_currentPly;
+                        ++_latestPly;
+
                         if ( _board.isInCheck(_board.sideToMove() ) )
                             _soundEngine->play2D("res/sounds/cymbal.wav", false);
                         else
@@ -275,8 +313,13 @@ void TestChess::DrawBoard()
         _shaderb->SetUniformMat4f("u_MVP", mvp);
 
         _shaderb->SetUniform1i("u_Cell", ii);
-        _shaderb->SetUniform1i("u_LastMoveFrom", _lastMove ? _lastMove->getfromSq() : -1);
-        _shaderb->SetUniform1i("u_LastMoveTo", _lastMove ? _lastMove->gettoSq() : -1);
+        if ( _currentPly != -1 )
+        {
+            const auto& state = _board.getBoardStateAt( _currentPly );
+            const auto &move = state._movePlayed;
+            _shaderb->SetUniform1i( "u_LastMoveFrom", move.getfromSq() );
+            _shaderb->SetUniform1i( "u_LastMoveTo", move.gettoSq() );
+        }
         _shaderb->SetUniform1f("u_Size", size);
         _shaderb->SetUniform2f( "u_CellOrigin", model[3][0], model[3][1] );
         _shaderb->SetUniform4f("u_Dark", _darkColor);
@@ -381,6 +424,10 @@ void TestChess::MakeEngineMove()
         _lastMove = std::make_unique<cmove>( moves.at( randomMove ) );
         _lastMoveTime = _app->GetCurrentTime();
         _board.makeMove( *_lastMove );
+
+        ++_currentPly;
+        ++_latestPly;
+
         if ( _board.isInCheck(_board.sideToMove() ) )
             _soundEngine->play2D("res/sounds/cymbal.wav", false);
         else
