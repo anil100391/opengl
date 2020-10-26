@@ -36,6 +36,11 @@ public:
 
 private:
 
+    enum class SCENE
+    {
+        TWOD, THREED
+    };
+
     // Pieces
     class PieceGL
     {
@@ -47,7 +52,7 @@ private:
             black_king, black_queen, black_bishop, black_knight, black_rook, black_pawn
         };
 
-        PieceGL( Type type, TestChess *parent );
+        PieceGL( Type type, bool twod, TestChess *parent );
         ~PieceGL() = default;
 
         const VertexArray &vao() const { return *_vao; }
@@ -57,6 +62,8 @@ private:
     private:
 
         void GeneratePieceGLBuffers();
+        void Generate2DPieceGLBuffers();
+        void Generate3DPieceGLBuffers();
         static std::array<std::array<float, 8>, 12> GetPieceTexCoordinates();
 
         static std::array<std::array<float, 8>, 12> s_texCoords;
@@ -67,6 +74,8 @@ private:
         std::unique_ptr<VertexArray>    _vao;
         std::unique_ptr<VertexBuffer>   _vbo;
         std::unique_ptr<IndexBuffer>    _ibo;
+
+        bool                            _twod = true;
     };
 
     friend class PieceGL;
@@ -75,9 +84,20 @@ private:
     void GenerateBoardGLBuffers();
     void GeneratePieceGLBuffers();
 
+    void Generate2DBoardGLBuffers();
+    void Generate3DBoardGLBuffers();
+    void Generate2DPieceGLBuffers();
+    void Generate3DPieceGLBuffers();
+
     // Draw
     void DrawBoard();
+    void Draw2DBoard();
+    void Draw3DBoard();
+
     void DrawPieces();
+    void Draw2DPieces();
+    void Draw3DPieces();
+
     void DrawCoordinates();
     void DrawArrows();
 
@@ -120,9 +140,15 @@ private:
     std::unique_ptr<Shader>         _shaderp;
     std::unique_ptr<Texture>        _texturep;
 
+    // 2d stuff
     glm::mat4                       _viewMat;
     glm::mat4                       _projMat;
 
+    // 3d stuff
+    glm::vec3                       _camPos = glm::vec3(0.0f, 0.0f, 14.0f);
+
+    // SCENE                           _st = SCENE::THREED;
+    SCENE                           _st = SCENE::TWOD;
     // parameters
     float                           _relativePieceSize = 0.95f;
     glm::vec4                       _darkColor = {0.2f, 0.2f, 0.2f, 1.0f};

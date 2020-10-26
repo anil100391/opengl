@@ -13,8 +13,15 @@
 
 #include "../app.h"
 
+#include "../utils/mesh.h"
+#include "../utils/meshbufferobjects.h"
+
 namespace test
 {
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+static constexpr float BOARD_SIZE = 4.0f;
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -27,15 +34,23 @@ TestChess::TestChess(Application *app)
     // const char *pos= "r2q1rk1/pppb1pbp/2np1np1/8/2PpP3/2N1BN1P/PP1QBPP1/R3K2R w KQ - 0 10"
     _board.setBoard( pos );
 
-    glEnable( GL_BLEND );
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    if ( _st == SCENE::TWOD )
+    {
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    }
+    else
+    {
+        assert( _st == SCENE::THREED );
+        glEnable( GL_DEPTH_TEST );
+    }
 
     GenerateBoardGLBuffers();
     GeneratePieceGLBuffers();
 
     // initialize irrKlang for audio
     _soundEngine = irrklang::createIrrKlangDevice();
-    _soundEngine->play2D("res/sounds/gong.wav", false);
+    // _soundEngine->play2D("res/sounds/gong.wav", false);
 }
 
 // -----------------------------------------------------------------------------
@@ -51,7 +66,7 @@ TestChess::~TestChess()
 void TestChess::OnRender()
 {
     glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-    glClear( GL_COLOR_BUFFER_BIT );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     DrawBoard();
     DrawPieces();
@@ -69,6 +84,7 @@ void TestChess::OnImGuiRender()
         ImGui::ColorEdit4( "Dark Square", &_darkColor[0] );
         ImGui::ColorEdit4( "Light Square", &_lightColor[0] );
         ImGui::ColorEdit4( "Highlight Square", &_highlightColor[0] );
+        ImGui::SliderFloat3( "Camera", &_camPos[0], -20, 20 );
     }
 
     ImGui::SetNextItemOpen( true );
@@ -219,6 +235,53 @@ void TestChess::OnEvent(Event& evt)
 // -----------------------------------------------------------------------------
 void TestChess::GenerateBoardGLBuffers()
 {
+    if ( _st == SCENE::TWOD )
+    {
+        Generate2DBoardGLBuffers();
+    }
+    else
+    {
+        assert( _st == SCENE::THREED );
+        Generate3DBoardGLBuffers();
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::Generate3DBoardGLBuffers()
+{
+    float size = BOARD_SIZE;
+
+    float vertices[] = { -size, -size, 0.0f, 0.0f,
+                          size, -size, 1.0f, 0.0f,
+                          size,  size, 1.0f, 1.0f,
+                         -size,  size, 0.0f, 1.0f };
+
+    unsigned int indices[] = { 0, 1, 2,
+                               2, 3, 0 };
+
+    _vaob = std::make_unique<VertexArray>();
+    _vbob = std::make_unique<VertexBuffer>(vertices, 4 * 4 * sizeof(float));
+
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    layout.Push<float>(2);
+
+    _vaob->AddBuffer(*_vbob, layout);
+
+    if ( !_ibob )
+        _ibob = std::make_unique<IndexBuffer>(indices, 6);
+
+    if ( !_shaderb )
+    {
+        _shaderb = std::make_unique<Shader>("res/shaders/board3d.shader");
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::Generate2DBoardGLBuffers()
+{
     int w = 0, h = 0;
     _app->GetWindowSize(w, h);
     float size = std::min(w, h) / 8.0f;
@@ -252,21 +315,68 @@ void TestChess::GenerateBoardGLBuffers()
 // -----------------------------------------------------------------------------
 void TestChess::GeneratePieceGLBuffers()
 {
+    if ( _st == SCENE::TWOD )
+    {
+        Generate2DPieceGLBuffers();
+    }
+    else
+    {
+        assert( _st == SCENE::THREED );
+        Generate3DPieceGLBuffers();
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::Generate3DPieceGLBuffers()
+{
     _pieces.clear();
 
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_king, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_queen, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_bishop, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_knight, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_rook, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_pawn, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_king, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_queen, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_bishop, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_knight, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_rook, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_pawn, _st == SCENE::TWOD, this ) );
 
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_king, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_queen, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_bishop, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_knight, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_rook, this ) );
-    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_pawn, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_king, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_queen, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_bishop, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_knight, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_rook, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_pawn, _st == SCENE::TWOD, this ) );
+
+    if ( !_shaderp )
+    {
+        _shaderp = std::make_unique<Shader>( "res/shaders/piece3d.shader" );
+    }
+
+    if ( !_texturep )
+    {
+        // _texturep = std::make_unique<Texture>( "res/textures/Chess_Pieces_Sprite.png" );
+        // _texturep->Bind();
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::Generate2DPieceGLBuffers()
+{
+    _pieces.clear();
+
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_king, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_queen, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_bishop, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_knight, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_rook, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::white_pawn, _st == SCENE::TWOD, this ) );
+
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_king, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_queen, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_bishop, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_knight, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_rook, _st == SCENE::TWOD, this ) );
+    _pieces.push_back( std::make_unique<PieceGL>( TestChess::PieceGL::Type::black_pawn, _st == SCENE::TWOD, this ) );
 
     if ( !_shaderp )
     {
@@ -283,6 +393,45 @@ void TestChess::GeneratePieceGLBuffers()
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 void TestChess::DrawBoard()
+{
+    if ( _st == SCENE::TWOD )
+    {
+        Draw2DBoard();
+    }
+    else
+    {
+        assert( _st == SCENE::THREED );
+        Draw3DBoard();
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::Draw3DBoard()
+{
+    Renderer renderer;
+    _shaderb->Bind();
+
+    _viewMat = glm::lookAt( _camPos, glm::vec3(0, 0, 0), glm::vec3( 0, 1, 0 ) );
+
+    int w = 0;
+    int h = 0;
+    _app->GetWindowSize( w, h );
+
+    _projMat = glm::perspective( glm::radians( 45.0f ), (float)w / (float)h, 0.1f, 100.0f );
+    // _projMat = glm::ortho( 0.0f, 1.0f * w, 0.0f, 1.0f * h, -1.0f, 1.0f );
+
+    glm::mat4 model = glm::mat4( 1.0f );
+
+    _shaderb->SetUniformMat4f( "u_M", model);
+    _shaderb->SetUniformMat4f( "u_V", _viewMat );
+    _shaderb->SetUniformMat4f( "u_P", _projMat );
+    renderer.Draw( *_vaob, *_ibob, *_shaderb );
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::Draw2DBoard()
 {
     Renderer renderer;
     _shaderb->Bind();
@@ -334,6 +483,67 @@ void TestChess::DrawBoard()
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 void TestChess::DrawPieces()
+{
+    if ( _st == SCENE::TWOD )
+    {
+        Draw2DPieces();
+    }
+    else
+    {
+        assert( _st == SCENE::THREED );
+        Draw3DPieces();
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::Draw3DPieces()
+{
+    Renderer renderer;
+    _shaderp->Bind();
+
+    _viewMat = glm::lookAt( _camPos, glm::vec3(0, 0, 0), glm::vec3( 0, 1, 0 ) );
+
+    int w = 0;
+    int h = 0;
+    _app->GetWindowSize( w, h );
+
+    _projMat = glm::perspective( glm::radians( 45.0f ), (float)w / (float)h, 0.1f, 100.0f );
+    // _projMat = glm::ortho( 0.0f, 1.0f * w, 0.0f, 1.0f * h, -1.0f, 1.0f );
+
+    float size = 2 * BOARD_SIZE;
+    float cellsize = size / 8;
+
+    for ( int square = 0; square < 64; ++square )
+    {
+        const cpiece& piece = _board[square];
+        if ( piece.getType() == cpiece::none )
+            continue;
+
+        int row = square / 8;
+        int col = square % 8;
+
+        float dx = - size / 2 + cellsize / 2;
+
+        glm::mat4 model = glm::mat4( 1.0f );
+        model = glm::translate( model, glm::vec3( dx, dx, 0.0f ) );
+        model = glm::translate( model, glm::vec3( col * cellsize, row * cellsize, 0.0f ) );
+        model = glm::rotate( model, glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+
+        _shaderp->SetUniformMat4f( "u_M", model );
+        _shaderp->SetUniformMat4f( "u_V", _viewMat );
+        _shaderp->SetUniformMat4f( "u_P", _projMat );
+
+        _shaderp->SetUniform1i( "u_PieceColor", piece.getColor() == dark ? 0 : 1 );
+
+        PieceGL* pgl = GetGLPiece( piece.getType() );
+        renderer.Draw( pgl->vao(), pgl->ibo(), *_shaderp );
+    }
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::Draw2DPieces()
 {
     Renderer renderer;
     _shaderp->Bind();
@@ -466,6 +676,9 @@ int TestChess::SquareAt( int x, int y ) const
     int rank = (y - yoffset) / size;
     int file = (x - xoffset) / size;
 
+    if ( rank < 0 || rank >= 8 || file < 0 || file >= 8 )
+        return -1;
+
     int sq = rank * 8 + file;
     if ( sq >= 0 && sq < 64 )
         return sq;
@@ -507,9 +720,10 @@ std::array<std::array<float, 8>, 12> TestChess::PieceGL::s_texCoords =
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestChess::PieceGL::PieceGL( Type type, TestChess *parent )
+TestChess::PieceGL::PieceGL( Type type, bool twod, TestChess *parent )
     : _type( type ),
-      _parent( parent )
+      _parent( parent ),
+      _twod(twod)
 {
     GeneratePieceGLBuffers();
 }
@@ -517,6 +731,65 @@ TestChess::PieceGL::PieceGL( Type type, TestChess *parent )
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 void TestChess::PieceGL::GeneratePieceGLBuffers()
+{
+    if ( _twod )
+        Generate2DPieceGLBuffers();
+    else
+        Generate3DPieceGLBuffers();
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::PieceGL::Generate3DPieceGLBuffers()
+{
+    std::unique_ptr<mesh> m = nullptr;
+    switch ( _type )
+    {
+    case Type::black_rook:
+    case Type::white_rook:
+        m = std::make_unique<mesh>( "res/chess/rook.obj" );
+        break;
+    case Type::black_knight:
+    case Type::white_knight:
+        m = std::make_unique<mesh>( "res/chess/knight.obj" );
+        break;
+    case Type::black_bishop:
+    case Type::white_bishop:
+        m = std::make_unique<mesh>( "res/chess/bishop.obj" );
+        break;
+    case Type::black_queen:
+    case Type::white_queen:
+        m = std::make_unique<mesh>( "res/chess/queen.obj" );
+        break;
+    case Type::black_king:
+    case Type::white_king:
+        m = std::make_unique<mesh>( "res/chess/king.obj" );
+        break;
+    case Type::black_pawn:
+    case Type::white_pawn:
+        m = std::make_unique<mesh>( "res/chess/pawn.obj" );
+        break;
+    }
+
+    assert( m != nullptr );
+    std::vector<float> vertices = mbos::vbo( *m, false );
+    std::vector<unsigned int> conn = mbos::ibo( *m, false );
+
+    _vao = std::make_unique<VertexArray>();
+    _vbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
+
+    VertexBufferLayout layout;
+    layout.Push<float>(3); // position
+    layout.Push<float>(3); // normal
+    layout.Push<float>(2); // texture coordinate
+    _vao->AddBuffer(*_vbo, layout);
+
+    _ibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestChess::PieceGL::Generate2DPieceGLBuffers()
 {
     int w = 0, h = 0;
     _parent->_app->GetWindowSize(w, h);

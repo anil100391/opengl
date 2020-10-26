@@ -5,18 +5,25 @@
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-layout(location = 0) in vec4 position;
+layout(location = 0) in vec2 position;
 layout(location = 1) in vec2 texCoord;
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-uniform mat4 u_MVP;
+uniform mat4 u_M;
+uniform mat4 u_V;
+uniform mat4 u_P;
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+out vec2 vTexCoord;
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 void main()
 {
-    gl_Position = u_MVP * position;
+    gl_Position = u_P * u_V * u_M * vec4(position, 0.0, 1.0);
+    vTexCoord = texCoord;
 };
 
 // -----------------------------------------------------------------------------
@@ -30,14 +37,7 @@ layout(location = 0) out vec4 color;
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-uniform int u_Cell;
-uniform int u_LastMoveFrom = -1;
-uniform int u_LastMoveTo = -1;
-uniform float u_Size;
-uniform vec2 u_CellOrigin;
-uniform vec4 u_Dark;
-uniform vec4 u_Light;
-uniform vec4 u_Highlight;
+in vec2 vTexCoord;
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -59,21 +59,13 @@ bool isDarkSquare( int squareIndex )
 // -----------------------------------------------------------------------------
 void main()
 {
-    if ( isDarkSquare( u_Cell ) )
-    {
-        vec2 coord = vec2( gl_FragCoord ) - u_CellOrigin;
-        coord = coord / u_Size;
-        coord += 1.0f;
-        coord *= 8.0f;
-        float fac = plot( coord );
-        color = (1.0f - fac) * u_Light + fac * u_Dark;
-    }
-    else
-    {
-        color = u_Light;
-    }
+    int rank = int(floor( vTexCoord.y * 8.0 ));
+    int file = int(floor( vTexCoord.x * 8.0 ));
+    int sq = rank * 8 + file;
 
-    if ( u_Cell == u_LastMoveFrom || u_Cell == u_LastMoveTo )
-        color = color * u_Highlight;
+    if ( isDarkSquare( sq ) )
+        color = vec4( vec3( 0.2f ), 1.0f );
+    else
+        color = vec4( vec3( 1.0f ), 1.0f );
 }
 
