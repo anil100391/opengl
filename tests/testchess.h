@@ -10,6 +10,7 @@
 #include "../indexbuffer.h"
 #include "../shader.h"
 #include "../texture.h"
+#include "../utils/meshgl.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -42,7 +43,7 @@ private:
     };
 
     // Pieces
-    class PieceGL
+    class PieceGL : public MeshGL
     {
     public:
 
@@ -54,10 +55,6 @@ private:
 
         PieceGL( Type type, bool twod, TestChess *parent );
         ~PieceGL() = default;
-
-        const VertexArray &vao() const { return *_vao; }
-        const VertexBuffer &vbo() const { return *_vbo; }
-        const IndexBuffer &ibo() const { return *_ibo; }
 
     private:
 
@@ -130,9 +127,7 @@ private:
     int SquareAt( int x, int y ) const;
 
     // board gl objects
-    std::unique_ptr<VertexArray>    _vaob;
-    std::unique_ptr<VertexBuffer>   _vbob;
-    std::unique_ptr<IndexBuffer>    _ibob;
+    std::unique_ptr<MeshGL>         _boardGL;
     std::unique_ptr<Shader>         _shaderb;
 
     // piece gl objects

@@ -9,6 +9,7 @@
 #include "../shader.h"
 #include "../texture.h"
 #include "../utils/mesh.h"
+#include "../utils/meshgl.h"
 #include "../light.h"
 #include "../camera.h"
 #include "../framebuffer.h"
@@ -54,16 +55,12 @@ private:
     pointlight      GetLight() const;
 
     mesh                            _mesh;
-    std::unique_ptr<VertexArray>    _vao;
-    std::unique_ptr<VertexBuffer>   _vbo;
-    std::unique_ptr<IndexBuffer>    _ibo;
+    std::unique_ptr<MeshGL>         _glMesh;
     std::unique_ptr<Shader>         _shader;
     std::unique_ptr<Texture>        _texture;
 
     // frame buffer gl objects
-    std::unique_ptr<VertexArray>    _fbvao;
-    std::unique_ptr<VertexBuffer>   _fbvbo;
-    std::unique_ptr<IndexBuffer>    _fbibo;
+    std::unique_ptr<MeshGL>         _fbglMesh;
     std::unique_ptr<Shader>         _fbshader;
 
     std::unique_ptr<FrameBuffer>    _framebuffer;

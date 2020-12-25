@@ -23,27 +23,23 @@ TestFragmentShader::TestFragmentShader(Application *app)
     _app->GetWindowSize(_windowWidth, _windowHeight);
     float w = _windowWidth;
     float h = _windowHeight;
-    float positions[] = { 0.0f, 0.0f, 0.0f, 0.0f,
-                          w,    0.0f, 1.0f, 0.0f,
-                          w,    h,    1.0f, 1.0f,
-                          0.0f, h,    0.0f, 1.0f };
+    std::vector<float> positions = { 0.0f, 0.0f, 0.0f, 0.0f,
+                                     w,    0.0f, 1.0f, 0.0f,
+                                     w,    h,    1.0f, 1.0f,
+                                     0.0f, h,    0.0f, 1.0f };
 
-    unsigned int indices[] = { 0, 1, 2, 0, 2, 3 };
+    std::vector<unsigned int> indices = { 0, 1, 2, 0, 2, 3 };
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glDisable(GL_DEPTH_TEST);
 
-    _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>(positions, 4 * 4 * sizeof(float));
-
     VertexBufferLayout layout;
     layout.Push<float>(2);
     layout.Push<float>(2);
-    _vao->AddBuffer(*_vbo, layout);
 
-    _ibo = std::make_unique<IndexBuffer>(indices, 6);
+    _quadGL = std::make_unique<MeshGL>( positions, layout, indices );
 
     _shader = std::make_unique<Shader>("res/shaders/julia.shader");
     _shader->Bind();
@@ -89,7 +85,7 @@ void TestFragmentShader::Draw()
         _shader->SetUniform1i("u_Mode", _mode);
 
         _shader->Bind();
-        renderer.Draw(*_vao, *_ibo, *_shader);
+        renderer.Draw(*_quadGL->vao(), *_quadGL->ibo(), *_shader);
     }
 }
 
@@ -159,26 +155,19 @@ void TestFragmentShader::OnEvent(Event &evt)
             _windowWidth = wre.Width();
             _windowHeight = wre.Height();
 
-            // recreate vbo and vao
-            _vao.reset(nullptr);
-            _vbo.reset(nullptr);
-
             float w = 1.0f * _windowWidth;
             float h = 1.0f * _windowHeight;
-            float positions[] = { 0.0f, 0.0f, 0.0f, 0.0f,
-                                  w,    0.0f, 1.0f, 0.0f,
-                                  w,    h,    1.0f, 1.0f,
-                                  0.0f, h,    0.0f, 1.0f };
+            std::vector<float> positions = { 0.0f, 0.0f, 0.0f, 0.0f,
+                                             w,    0.0f, 1.0f, 0.0f,
+                                             w,    h,    1.0f, 1.0f,
+                                             0.0f, h,    0.0f, 1.0f };
 
-            unsigned int indices[] = { 0, 1, 2, 0, 2, 3 };
-
-            _vao = std::make_unique<VertexArray>();
-            _vbo = std::make_unique<VertexBuffer>(positions, 4 * 4 * sizeof(float));
+            std::vector<unsigned int> indices = { 0, 1, 2, 0, 2, 3 };
 
             VertexBufferLayout layout;
             layout.Push<float>(2);
             layout.Push<float>(2);
-            _vao->AddBuffer(*_vbo, layout);
+            _quadGL = std::make_unique<MeshGL>( positions, layout, indices );
             break;
         }
         default: break;

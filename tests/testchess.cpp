@@ -252,25 +252,19 @@ void TestChess::Generate3DBoardGLBuffers()
 {
     float size = BOARD_SIZE;
 
-    float vertices[] = { -size, -size, 0.0f, 0.0f,
-                          size, -size, 1.0f, 0.0f,
-                          size,  size, 1.0f, 1.0f,
-                         -size,  size, 0.0f, 1.0f };
+    std::vector<float> vertices = { -size, -size, 0.0f, 0.0f,
+                                     size, -size, 1.0f, 0.0f,
+                                     size,  size, 1.0f, 1.0f,
+                                    -size,  size, 0.0f, 1.0f };
 
-    unsigned int indices[] = { 0, 1, 2,
-                               2, 3, 0 };
-
-    _vaob = std::make_unique<VertexArray>();
-    _vbob = std::make_unique<VertexBuffer>(vertices, 4 * 4 * sizeof(float));
+    std::vector<unsigned int> conn = { 0, 1, 2,
+                                       2, 3, 0 };
 
     VertexBufferLayout layout;
     layout.Push<float>(2);
     layout.Push<float>(2);
 
-    _vaob->AddBuffer(*_vbob, layout);
-
-    if ( !_ibob )
-        _ibob = std::make_unique<IndexBuffer>(indices, 6);
+    _boardGL = std::make_unique<MeshGL>( vertices, layout, conn );
 
     if ( !_shaderb )
     {
@@ -286,24 +280,18 @@ void TestChess::Generate2DBoardGLBuffers()
     _app->GetWindowSize(w, h);
     float size = std::min(w, h) / 8.0f;
 
-    float cellCoords[] = { 0.0f, 0.0f,
-                           size, 0.0f,
-                           size, size,
-                           0.0f, size };
+    std::vector<float> vertices = { 0.0f, 0.0f,
+                                    size, 0.0f,
+                                    size, size,
+                                    0.0f, size };
 
-    unsigned int indices[] = { 0, 1, 2,
-                               2, 3, 0 };
-
-    _vaob = std::make_unique<VertexArray>();
-    _vbob = std::make_unique<VertexBuffer>(cellCoords, 4 * 2 * sizeof(float));
+    std::vector<unsigned int> conn = { 0, 1, 2,
+                                       2, 3, 0 };
 
     VertexBufferLayout layout;
     layout.Push<float>(2);
 
-    _vaob->AddBuffer(*_vbob, layout);
-
-    if ( !_ibob )
-        _ibob = std::make_unique<IndexBuffer>(indices, 6);
+    _boardGL = std::make_unique<MeshGL>( vertices, layout, conn );
 
     if ( !_shaderb )
     {
@@ -426,7 +414,7 @@ void TestChess::Draw3DBoard()
     _shaderb->SetUniformMat4f( "u_M", model);
     _shaderb->SetUniformMat4f( "u_V", _viewMat );
     _shaderb->SetUniformMat4f( "u_P", _projMat );
-    renderer.Draw( *_vaob, *_ibob, *_shaderb );
+    renderer.Draw( *_boardGL->vao(), *_boardGL->ibo(), *_shaderb );
 }
 
 // -----------------------------------------------------------------------------
@@ -476,7 +464,7 @@ void TestChess::Draw2DBoard()
         _shaderb->SetUniform4f("u_Light", _lightColor);
         _shaderb->SetUniform4f("u_Highlight", _highlightColor);
 
-        renderer.Draw(*_vaob, *_ibob, *_shaderb);
+        renderer.Draw(*_boardGL->vao(), *_boardGL->ibo(), *_shaderb);
     }
 }
 
@@ -537,7 +525,7 @@ void TestChess::Draw3DPieces()
         _shaderp->SetUniform1i( "u_PieceColor", piece.getColor() == dark ? 0 : 1 );
 
         PieceGL* pgl = GetGLPiece( piece.getType() );
-        renderer.Draw( pgl->vao(), pgl->ibo(), *_shaderp );
+        renderer.Draw( *pgl->vao(), *pgl->ibo(), *_shaderp );
     }
 }
 
@@ -589,7 +577,7 @@ void TestChess::Draw2DPieces()
         _shaderp->SetUniform1i( "u_Texture", 0 );
 
         PieceGL *pgl = GetGLPiece(piece.getType());
-        renderer.Draw( pgl->vao(), pgl->ibo(), *_shaderp );
+        renderer.Draw( *pgl->vao(), *pgl->ibo(), *_shaderp );
     }
 
 
@@ -604,7 +592,7 @@ void TestChess::Draw2DPieces()
 
         _shaderp->SetUniform1i( "u_Texture", 0 );
 
-        renderer.Draw( _draggingPiece->vao(), _draggingPiece->ibo(), *_shaderp );
+        renderer.Draw( *_draggingPiece->vao(), *_draggingPiece->ibo(), *_shaderp );
     }
 }
 
@@ -721,7 +709,8 @@ std::array<std::array<float, 8>, 12> TestChess::PieceGL::s_texCoords =
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 TestChess::PieceGL::PieceGL( Type type, bool twod, TestChess *parent )
-    : _type( type ),
+    : MeshGL(),
+      _type( type ),
       _parent( parent ),
       _twod(twod)
 {
@@ -775,16 +764,12 @@ void TestChess::PieceGL::Generate3DPieceGLBuffers()
     std::vector<float> vertices = mbos::vbo( *m, false );
     std::vector<unsigned int> conn = mbos::ibo( *m, false );
 
-    _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
-
     VertexBufferLayout layout;
     layout.Push<float>(3); // position
     layout.Push<float>(3); // normal
     layout.Push<float>(2); // texture coordinate
-    _vao->AddBuffer(*_vbo, layout);
 
-    _ibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
+    PopulateBuffers( vertices, layout, conn );
 }
 
 // -----------------------------------------------------------------------------
@@ -798,25 +783,19 @@ void TestChess::PieceGL::Generate2DPieceGLBuffers()
 
     const std::array<float, 8> &texCoord = s_texCoords[static_cast<int>(_type)];
 
-    float cellCoords[] = { 0.0f, 0.0f, texCoord[0], texCoord[1],
-                           size, 0.0f, texCoord[2], texCoord[3],
-                           size, size, texCoord[4], texCoord[5],
-                           0.0f, size, texCoord[6], texCoord[7] };
+    std::vector<float> vertices = { 0.0f, 0.0f, texCoord[0], texCoord[1],
+                                    size, 0.0f, texCoord[2], texCoord[3],
+                                    size, size, texCoord[4], texCoord[5],
+                                    0.0f, size, texCoord[6], texCoord[7] };
 
-    unsigned int indices[] = { 0, 1, 2,
-                               2, 3, 0 };
-
-    _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>(cellCoords, 4 * 4 * sizeof(float));
+    std::vector<unsigned int> conn = { 0, 1, 2,
+                                       2, 3, 0 };
 
     VertexBufferLayout layout;
     layout.Push<float>(2); // vertex
     layout.Push<float>(2); // texture coordinate
 
-    _vao->AddBuffer(*_vbo, layout);
-
-    if ( !_ibo )
-        _ibo = std::make_unique<IndexBuffer>(indices, 6);
+    PopulateBuffers( vertices, layout, conn );
 }
 
 // -----------------------------------------------------------------------------

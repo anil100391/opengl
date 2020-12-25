@@ -108,14 +108,10 @@ void TestObjLoader::CreateEnvironmentGLBuffers()
                                        24, 25, 26, 27, 28, 29,
                                        30, 31, 32, 33, 34, 35 };
 
-    _envvao = std::make_unique<VertexArray>();
-    _envvbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
-
     VertexBufferLayout layout;
     layout.Push<float>(3); // position
-    _envvao->AddBuffer(*_envvbo, layout);
 
-    _envibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
+    _envglMesh = std::make_unique<MeshGL>( vertices, layout, conn );
 }
 
 // -----------------------------------------------------------------------------
@@ -125,16 +121,12 @@ void TestObjLoader::CreateMeshGLBuffers()
     std::vector<float> vertices = mbos::vbo(_mesh, _flatShading);
     std::vector<unsigned int> conn = mbos::ibo(_mesh, _flatShading);
 
-    _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
-
     VertexBufferLayout layout;
     layout.Push<float>(3); // position
     layout.Push<float>(3); // normal
     layout.Push<float>(2); // texture coordinate
-    _vao->AddBuffer(*_vbo, layout);
 
-    _ibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
+    _glMesh = std::make_unique<MeshGL>( vertices, layout, conn );
 }
 
 // -----------------------------------------------------------------------------
@@ -188,7 +180,7 @@ void TestObjLoader::OnRender()
         _shader->SetUniform4f("light.diffuse", l._diffuse);
         _shader->SetUniform4f("light.specular", l._specular);
 
-        renderer.Draw(*_vao, *_ibo, *_shader);
+        renderer.Draw(*_glMesh->vao(), *_glMesh->ibo(), *_shader);
     }
 
     {
@@ -203,7 +195,7 @@ void TestObjLoader::OnRender()
         _cubemapTexture->Bind();
         _cubemapShader->Bind();
         _cubemapShader->SetUniformMat4f("u_MVP", mvp);
-        renderer.Draw(*_envvao, *_envibo, *_cubemapShader);
+        renderer.Draw(*_envglMesh->vao(), *_envglMesh->ibo(), *_cubemapShader);
         glDepthFunc(GL_LESS);
     }
 }

@@ -14,28 +14,23 @@ TestTexture2D::TestTexture2D(Application *app)
       _translationA(glm::vec3(200.0f, 200.0, 0.0f)),
       _translationB(glm::vec3(400.0f, 200.0, 0.0f))
 {
-    float positions[] = { -50.0f, -50.0f, 0.0f, 0.0f,
-                           50.0f, -50.0f, 1.0f, 0.0f,
-                           50.0f,  50.0f, 1.0f, 1.0f,
-                          -50.0f,  50.0f, 0.0f, 1.0f };
+    std::vector<float> positions = { -50.0f, -50.0f, 0.0f, 0.0f,
+                                      50.0f, -50.0f, 1.0f, 0.0f,
+                                      50.0f,  50.0f, 1.0f, 1.0f,
+                                     -50.0f,  50.0f, 0.0f, 1.0f };
 
-    unsigned int indices[] = { 0, 1, 2,
-                               2, 3, 0 };
+    std::vector<unsigned int> indices = { 0, 1, 2, 2, 3, 0 };
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glDisable(GL_DEPTH_TEST);
 
-    _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>(positions, 4 * 4 * sizeof(float));
-
     VertexBufferLayout layout;
     layout.Push<float>(2);
     layout.Push<float>(2);
-    _vao->AddBuffer(*_vbo, layout);
 
-    _ibo = std::make_unique<IndexBuffer>(indices, 6);
+    _quadGL = std::make_unique<MeshGL>( positions, layout, indices );
 
     _shader = std::make_unique<Shader>("res/shaders/basic.shader");
     _shader->Bind();
@@ -72,7 +67,7 @@ void TestTexture2D::OnRender()
         _shader->SetUniformMat4f("u_MVP", mvp);
 
         _shader->Bind();
-        renderer.Draw(*_vao, *_ibo, *_shader);
+        renderer.Draw(*_quadGL->vao(), *_quadGL->ibo(), *_shader);
     }
 
     {
@@ -82,7 +77,7 @@ void TestTexture2D::OnRender()
         _shader->SetUniformMat4f("u_MVP", mvp);
 
         _shader->Bind();
-        renderer.Draw(*_vao, *_ibo, *_shader);
+        renderer.Draw(*_quadGL->vao(), *_quadGL->ibo(), *_shader);
     }
 
 }

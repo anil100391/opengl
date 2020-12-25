@@ -8,6 +8,7 @@
 #include "../indexbuffer.h"
 #include "../shader.h"
 #include "../events/event.h"
+#include "../utils/meshgl.h"
 
 #include <memory>
 
@@ -32,9 +33,7 @@ private:
 
     void Draw();
 
-    std::unique_ptr<VertexArray>    _vao;
-    std::unique_ptr<VertexBuffer>   _vbo;
-    std::unique_ptr<IndexBuffer>    _ibo;
+    std::unique_ptr<MeshGL>         _quadGL;
     std::unique_ptr<Shader>         _shader;
 
     // 2d coordinate params

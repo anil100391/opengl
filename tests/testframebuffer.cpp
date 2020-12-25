@@ -51,16 +51,12 @@ void TestFrameBuffer::CreateMeshGLBuffers()
     std::vector<float> vertices = mbos::vbo(_mesh, _flatShading);
     std::vector<unsigned int> conn = mbos::ibo(_mesh, _flatShading);
 
-    _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
-
     VertexBufferLayout layout;
     layout.Push<float>(3); // position
     layout.Push<float>(3); // normal
     layout.Push<float>(2); // texture coordinate
-    _vao->AddBuffer(*_vbo, layout);
 
-    _ibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
+    _glMesh = std::make_unique<MeshGL>( vertices, layout, conn );
 }
 
 // -----------------------------------------------------------------------------
@@ -76,15 +72,11 @@ void TestFrameBuffer::CreateFrameBufferGLBuffers()
 
     std::vector<unsigned int> conn = {0, 1, 2, 0, 2, 3};
 
-    _fbvao = std::make_unique<VertexArray>();
-    _fbvbo = std::make_unique<VertexBuffer>(vertices.data(), vertices.size() * sizeof(float));
-
     VertexBufferLayout layout;
     layout.Push<float>(2); // position
     layout.Push<float>(2); // texture
-    _fbvao->AddBuffer(*_fbvbo, layout);
 
-    _fbibo = std::make_unique<IndexBuffer>(conn.data(), conn.size());
+    _fbglMesh = std::make_unique<MeshGL>( vertices, layout, conn );
 }
 
 
@@ -109,7 +101,7 @@ void TestFrameBuffer::OnRender()
 
     // render to frame buffer first
     _framebuffer->Bind();
-    glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     {
@@ -142,14 +134,14 @@ void TestFrameBuffer::OnRender()
         _shader->SetUniform4f("light.diffuse", l._diffuse);
         _shader->SetUniform4f("light.specular", l._specular);
 
-        renderer.Draw(*_vao, *_ibo, *_shader);
+        renderer.Draw(*_glMesh->vao(), *_glMesh->ibo(), *_shader);
     }
 
     _framebuffer->Unbind();
     // return;
 
     // render to the frame buffer quad using framebuffer texture
-    glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
     {
@@ -163,11 +155,7 @@ void TestFrameBuffer::OnRender()
         _fbshader->SetUniform1i("u_Texture", 0);//_framebuffer->TextureID());
         _fbshader->SetUniformMat4f("u_MVP", _projMat);
 
-        if ( _fbvao && _fbibo && _fbshader )
-        {
-            // std::cout << "drawing to quad\n";
-            renderer.Draw(*_fbvao, *_fbibo, *_fbshader);
-        }
+        renderer.Draw( *_fbglMesh->vao(), *_fbglMesh->ibo(), *_fbshader );
     }
 }
 
