@@ -165,6 +165,14 @@ void TestChess::OnEvent(Event& evt)
             {
                 const cpiece &p = _board[_pickStartSq];
                 _draggingPiece = GetGLPiece( p.getType() );
+                _draggingPieceLegalMoves = _board.generateMoves();
+                auto it = std::remove_if( _draggingPieceLegalMoves.begin(),
+                                          _draggingPieceLegalMoves.end(),
+                                          [this](const cmove& m)
+                                          {
+                                              return (m.getfromSq() != _pickStartSq);
+                                          } );
+                _draggingPieceLegalMoves.erase( it, _draggingPieceLegalMoves.end() );
             }
         }
 
@@ -191,13 +199,13 @@ void TestChess::OnEvent(Event& evt)
                             _soundEngine->play2D("res/sounds/cymbal.wav", false);
                         else
                             _soundEngine->play2D("res/sounds/woodthunk.wav", false);
-                        _lastMove = std::make_unique<cmove>( _pickStartSq, dropSq );
                         _lastMoveTime = _app->GetCurrentTime();
                         _engineTurn = true;
                     }
                 }
             }
             _pickStartSq = -1;
+            _draggingPieceLegalMoves.clear();
             _draggingPiece = nullptr;
         }
 
@@ -441,6 +449,22 @@ void TestChess::Draw2DBoard()
         offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f * (h - w), 0.0f));
     }
 
+    std::vector<unsigned int> highlightedSq;
+    highlightedSq.reserve( 64 );
+
+    if ( _currentPly != -1 && !_draggingPiece )
+    {
+        const auto &state = _board.getBoardStateAt( _currentPly );
+        const auto &move = state._movePlayed;
+        highlightedSq.push_back( move.getfromSq() );
+        highlightedSq.push_back( move.gettoSq() );
+    }
+
+    for ( const auto &move : _draggingPieceLegalMoves )
+    {
+        highlightedSq.push_back( move.gettoSq() );
+    }
+
     for (unsigned int ii = 0; ii < 64; ++ii )
     {
         unsigned int row = ii / 8;
@@ -450,16 +474,11 @@ void TestChess::Draw2DBoard()
         glm::mat4 mvp = _projMat * _viewMat * model;
         _shaderb->SetUniformMat4f("u_MVP", mvp);
 
+        bool highlighted = std::find( highlightedSq.begin(), highlightedSq.end(), ii ) != highlightedSq.end();
+        _shaderb->SetUniform1i("u_Highlighted",  highlighted ? 1 : 0);
         _shaderb->SetUniform1i("u_Cell", ii);
-        if ( _currentPly != -1 )
-        {
-            const auto& state = _board.getBoardStateAt( _currentPly );
-            const auto &move = state._movePlayed;
-            _shaderb->SetUniform1i( "u_LastMoveFrom", move.getfromSq() );
-            _shaderb->SetUniform1i( "u_LastMoveTo", move.gettoSq() );
-        }
         _shaderb->SetUniform1f("u_Size", size);
-        _shaderb->SetUniform2f( "u_CellOrigin", model[3][0], model[3][1] );
+        _shaderb->SetUniform2f("u_CellOrigin", model[3][0], model[3][1]);
         _shaderb->SetUniform4f("u_Dark", _darkColor);
         _shaderb->SetUniform4f("u_Light", _lightColor);
         _shaderb->SetUniform4f("u_Highlight", _highlightColor);
@@ -627,9 +646,8 @@ void TestChess::MakeEngineMove()
 
     if ( !moves.empty() )
     {
-        _lastMove = std::make_unique<cmove>( moves.at( randomMove ) );
         _lastMoveTime = _app->GetCurrentTime();
-        _board.makeMove( *_lastMove );
+        _board.makeMove(  moves.at( randomMove ) );
 
         ++_currentPly;
         ++_latestPly;

@@ -31,8 +31,7 @@ layout(location = 0) out vec4 color;
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 uniform int u_Cell;
-uniform int u_LastMoveFrom = -1;
-uniform int u_LastMoveTo = -1;
+uniform int u_Highlighted = 0;
 uniform float u_Size;
 uniform vec2 u_CellOrigin;
 uniform vec4 u_Dark;
@@ -73,7 +72,7 @@ void main()
         color = u_Light;
     }
 
-    if ( u_Cell == u_LastMoveFrom || u_Cell == u_LastMoveTo )
+    if ( u_Highlighted != 0 )
         color = color * u_Highlight;
 }
 

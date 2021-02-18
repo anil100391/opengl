@@ -151,7 +151,7 @@ private:
     glm::vec4                       _highlightColor = {0.75f, 0.75f, 0.25f, 1.0f};
 
     cboard                          _board;
-    std::unique_ptr<cmove>          _lastMove;
+    std::vector<cmove>              _draggingPieceLegalMoves;
     float                           _lastMoveTime = 0.0f;
     int                             _currentPly = -1;
     int                             _latestPly = -1;
