@@ -32,10 +32,16 @@ void Renderer::Clear() const
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void Renderer::Draw(const VertexArray& va, const IndexBuffer &ib, const Shader &shader) const
+void Renderer::Draw(const VertexArray& va, const IndexBuffer &ib, const Shader &shader, DRAW_MODE dm) const
 {
     va.Bind();
     ib.Bind();
     shader.Bind();
-    glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
+
+    if (dm == TRIANGLES)
+        glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
+    else if (dm == QUADS)
+        glDrawElements(GL_QUADS, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
+    else if (dm == LINES)
+        glDrawElements(GL_LINES, ib.GetCount(), GL_UNSIGNED_INT, nullptr);
 }

@@ -26,6 +26,15 @@ public:
         return _max;
     }
 
+    [[nodiscard]] const float* center() const noexcept
+    {
+        static float center[3] = {0, 0, 0};
+        center[0] = (_min[0] + _max[0]) / 2;
+        center[1] = (_min[1] + _max[1]) / 2;
+        center[2] = (_min[2] + _max[2]) / 2;
+        return center;
+    }
+
     [[nodiscard]] bool contains(float *v) const noexcept
     {
         return (v[0] >= _min[0]) &&

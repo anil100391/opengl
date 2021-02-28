@@ -24,8 +24,15 @@ class Renderer
 {
 public:
 
+    enum DRAW_MODE
+    {
+        LINES,
+        TRIANGLES,
+        QUADS
+    };
+
     void Clear() const;
-    void Draw(const VertexArray& va, const IndexBuffer &ib, const Shader &shader) const;
+    void Draw(const VertexArray& va, const IndexBuffer &ib, const Shader &shader, DRAW_MODE dm = TRIANGLES) const;
 };
 
 #endif // _renderer_h_
