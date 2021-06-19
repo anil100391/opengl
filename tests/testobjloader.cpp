@@ -139,7 +139,10 @@ TestObjLoader::~TestObjLoader()
 // -----------------------------------------------------------------------------
 void TestObjLoader::OnUpdate(float deltaTime)
 {
-     _time = deltaTime;
+    if ( !_paused )
+    {
+        _time += 0.01;
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -296,6 +299,10 @@ void TestObjLoader::OnEvent( Event &evt )
             {
                 _flatShading = !_flatShading;
                 CreateMeshGLBuffers();
+            }
+            else if ( keyEvent.GetKeyCode() == GLFW_KEY_SPACE )
+            {
+                _paused = !_paused;
             }
             break;
         }

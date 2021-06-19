@@ -73,8 +73,9 @@ private:
     std::unique_ptr<CubeMap>        _cubemapTexture;
     std::unique_ptr<Shader>         _cubemapShader;
 
-    double                          _time;
+    double                          _time = 0.0;
     bool                            _flatShading = true;
+    bool                            _paused = true;
 
     ImGui::FileBrowser              _fileDialog;
 };
