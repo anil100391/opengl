@@ -155,8 +155,8 @@ private:
 class MouseScrollEvent : public MouseEvent
 {
 public:
-    MouseScrollEvent( double xoffset, double yoffset )
-        : MouseEvent( 0, 0 ),
+    MouseScrollEvent( double x, double y, double xoffset, double yoffset )
+        : MouseEvent( x, y ),
           _xoffset(xoffset),
           _yoffset(yoffset)
     {}

@@ -6,6 +6,7 @@
 #include "tests/testfragmentshader.h"
 #include "tests/testobjloader.h"
 #include "tests/testtexture2d.h"
+#include "tests/testimageviewer.h"
 #include "tests/testchess.h"
 #include "tests/testgame.h"
 #include "tests/testlorenz.h"
@@ -72,6 +73,7 @@ TestsApplication::TestsApplication() : Application( {1920, 1080, "TESTS"} )
 
     _testMenu->RegisterTest<test::TestClearColor>( "Clear Color" );
     _testMenu->RegisterTest<test::TestTexture2D>( "2D Texture" );
+    _testMenu->RegisterTest<test::TestImageViewer>( "Image Viewer" );
     _testMenu->RegisterTest<test::TestObjLoader>( "Obj Viewer" );
     _testMenu->RegisterTest<test::TestFragmentShader>( "Fractals" );
     _testMenu->RegisterTest<test::TestLorenz>( "Lorenz Attractor" );

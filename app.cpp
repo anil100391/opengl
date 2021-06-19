@@ -112,7 +112,10 @@ void MouseScrollCallback( GLFWwindow *window,
 {
     auto app = static_cast<Application *>( glfwGetWindowUserPointer( window ) );
 
-    MouseScrollEvent evt(xoffset, yoffset);
+    double xpos, ypos;
+    glfwGetCursorPos( window, &xpos, &ypos );
+
+    MouseScrollEvent evt(xpos, ypos, xoffset, yoffset);
     app->OnEvent(evt);
 }
 
