@@ -45,7 +45,7 @@ public:
     template <typename T>
     void RegisterTest(const std::string& name)
     {
-        std::cout << "Restering test\n";
+        std::cout << "Registering test\n";
         _tests.push_back(std::make_pair(name, [this](){ return new T(_app); }));
     }
 
