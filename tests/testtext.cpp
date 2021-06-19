@@ -54,13 +54,13 @@ TestText::TestText( Application *app )
     }
 
     FT_Face face;
-    if ( FT_New_Face( ft, "res/fonts/Open_Sans/OpenSans-Regular.ttf", 0, &face ) )
+    if ( FT_New_Face( ft, "res/fonts/trajan-pro/TrajanPro.ttf", 0, &face ) )
     {
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
         return;
     }
 
-    FT_Set_Pixel_Sizes( face, 0, 48 );
+    FT_Set_Pixel_Sizes( face, 0, 72 );
 
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 ); // disable byte-alignment restriction
 
@@ -127,9 +127,8 @@ void TestText::OnRender()
 
     _shader->Bind();
     _shader->SetUniformMat4f( "projection", projection );
-    _shader->SetUniform3f( "textColor", glm::vec3( 0.0f, 1.0f, 0.0f ) );
 
-    RenderText( "Did I hear a squeak?", 540.0f, 570.0f, 1.5f, glm::vec3( 0.3, 0.7f, 0.9f ) );
+    RenderText( "Did I hear a squeak?", 540.0f, 570.0f, 1.0f, glm::vec3( 0.3, 0.7f, 0.5f ) );
 }
 
 // -----------------------------------------------------------------------------
@@ -146,6 +145,8 @@ void TestText::RenderText( const std::string &text, float x, float y,
     // activate corresponding render state
     glActiveTexture( GL_TEXTURE0 );
     glBindVertexArray( VAO );
+
+    _shader->SetUniform3f( "textColor", color );
 
     // iterate through all characters
     for ( const auto& c: text )
