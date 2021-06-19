@@ -16,9 +16,9 @@ void MeshGL::PopulateBuffers( const std::vector<float> &vertices,
                               const std::vector<unsigned int> &conn )
 {
     _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>( vertices.data(), vertices.size() * sizeof( float ) );
+    _vbo = std::make_unique<VertexBuffer>( vertices.data(), static_cast<unsigned int>(vertices.size() * sizeof( float )) );
 
     _vao->AddBuffer( *_vbo, layout );
 
-    _ibo = std::make_unique<IndexBuffer>( conn.data(), conn.size() );
+    _ibo = std::make_unique<IndexBuffer>( conn.data(), static_cast<unsigned int>(conn.size()) );
 }

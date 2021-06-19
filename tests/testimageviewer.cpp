@@ -186,12 +186,12 @@ void TestImageViewer::OnEvent(Event& evt)
         float u = 1.0f * x / w;
         float v = 1.0f * y / h;
 
-        _zoomlevel += 0.1f * mouseEvt.YOffset();
+        _zoomlevel += static_cast<float>(0.1 * mouseEvt.YOffset());
         float newWidth = _zoomlevel * w;
         float newHeight = _zoomlevel * h;
 
-        int dx = newWidth * u - x;
-        int dy = newHeight * v - y;
+        int dx = static_cast<int>(newWidth * u - x);
+        int dy = static_cast<int>(newHeight * v - y);
 
         _projMat = glm::ortho(0.0f - dx, newWidth - dx, 0.0f - dy, newHeight - dy, -1.0f, 1.0f);
 

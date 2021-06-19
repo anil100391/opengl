@@ -115,7 +115,8 @@ void MouseScrollCallback( GLFWwindow *window,
     double xpos, ypos;
     glfwGetCursorPos( window, &xpos, &ypos );
 
-    MouseScrollEvent evt(xpos, ypos, xoffset, yoffset);
+    MouseScrollEvent evt( static_cast<int>(xpos), static_cast<int>(ypos),
+                          xoffset, yoffset );
     app->OnEvent(evt);
 }
 
@@ -207,7 +208,7 @@ void Application::GetWindowSize(int &width, int &height) const noexcept
 // -----------------------------------------------------------------------------
 float Application::GetCurrentTime() const noexcept
 {
-    return glfwGetTime();
+    return static_cast<float>(glfwGetTime());
 }
 
 // -----------------------------------------------------------------------------

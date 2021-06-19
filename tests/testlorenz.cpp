@@ -27,15 +27,15 @@ void TestLorenz::CreateLorenzGLBuffers()
     std::vector<float> vertices;
     std::vector<unsigned int> conn;
 
-    float h = 0.01,
-          a = 10.0,
-          b = 28.0,
-          c = 8.0 / 3.0;
+    float h = 0.01f,
+          a = 10.0f,
+          b = 28.0f,
+          c = 8.0f / 3.0f;
 
-    float x0 = 0.1;
-    float y0 = 0;
-    float z0 = 0;
-    float t  = 0;
+    float x0 = 0.1f;
+    float y0 = 0.0f;
+    float z0 = 0.0f;
+    float t  = 0.0f;
 
     int iterations = _iterations;
 
@@ -69,11 +69,11 @@ void TestLorenz::CreateLorenzGLBuffers()
     layout.Push<float>(3); // position
 
     _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>( vertices.data(), vertices.size() * sizeof( float ) );
+    _vbo = std::make_unique<VertexBuffer>( vertices.data(), static_cast<unsigned int>(vertices.size() * sizeof( float )) );
 
     _vao->AddBuffer( *_vbo, layout );
 
-    _ibo = std::make_unique<IndexBuffer>( conn.data(), conn.size() );
+    _ibo = std::make_unique<IndexBuffer>( conn.data(), static_cast<unsigned int>(conn.size()) );
 
     // Update camera to keep everything in frame
     box3 bbox;
@@ -168,8 +168,8 @@ void TestLorenz::OnEvent( Event &evt )
                 double len = std::sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
                 theta += dtheta;
                 glm::vec3 newpos = pos;
-                newpos[0] = len * std::cos(theta);
-                newpos[1] = len * std::sin(theta);
+                newpos[0] = static_cast<float>(len * std::cos(theta));
+                newpos[1] = static_cast<float>(len * std::sin(theta));
                 _camera.SetPosition(newpos);
             }
             if ( currIterations != _iterations )
@@ -205,7 +205,7 @@ void TestLorenz::OnEvent( Event &evt )
             const auto& lookAt = _camera.GetLookAt();
             const auto& eye    = _camera.GetPosition();
             glm::vec3 dir = eye - lookAt;
-            float scale = 0.1f * mouseEvt.YOffset();
+            float scale = static_cast<float>(0.1 * mouseEvt.YOffset());
             dir = dir +  dir * scale;
             _camera.SetPosition(lookAt + dir);
             break;

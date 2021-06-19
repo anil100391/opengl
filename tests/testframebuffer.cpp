@@ -211,8 +211,8 @@ void TestFrameBuffer::OnEvent( Event &evt )
                 double len = std::sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
                 theta += dtheta;
                 glm::vec3 newpos = pos;
-                newpos[0] = len * std::cos(theta);
-                newpos[1] = len * std::sin(theta);
+                newpos[0] = static_cast<float>(len * std::cos(theta));
+                newpos[1] = static_cast<float>(len * std::sin(theta));
                 _camera.SetPosition(newpos);
             }
             break;
@@ -243,7 +243,7 @@ void TestFrameBuffer::OnEvent( Event &evt )
             const auto& lookAt = _camera.GetLookAt();
             const auto& eye    = _camera.GetPosition();
             glm::vec3 dir = eye - lookAt;
-            float scale = 0.1f * mouseEvt.YOffset();
+            float scale = static_cast<float>(0.1 * mouseEvt.YOffset());
             dir = dir +  dir * scale;
             _camera.SetPosition(lookAt + dir);
             break;
