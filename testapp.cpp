@@ -11,6 +11,7 @@
 #include "tests/testgame.h"
 #include "tests/testlorenz.h"
 #include "tests/testframebuffer.h"
+#include "tests/testtext.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -80,6 +81,7 @@ TestsApplication::TestsApplication() : Application( {1920, 1080, "TESTS"} )
     _testMenu->RegisterTest<test::TestChess>( "Chess" );
     _testMenu->RegisterTest<test::TestGame>( "Game" );
     _testMenu->RegisterTest<test::TestFrameBuffer>( "FrameBuffers" );
+    _testMenu->RegisterTest<test::TestText>( "Text" );
 }
 
 // -----------------------------------------------------------------------------
