@@ -58,6 +58,17 @@ public:
         return _lookAt;
     }
 
+    void SetUpVec(const glm::vec3 &upvec) noexcept
+    {
+        _upVec = upvec;
+        _viewDirty = true;
+    }
+
+    [[nodiscard]] const glm::vec3& GetUpVec() const noexcept
+    {
+        return _upVec;
+    }
+
     [[nodiscard]] const glm::mat4& GetViewMatrix() noexcept
     {
         if ( _viewDirty )
@@ -93,11 +104,12 @@ private:
 
     [[nodiscard]] glm::mat4 GetPerspectiveViewMatrix() const noexcept
     {
-        return glm::lookAt( _position, _lookAt, glm::vec3(0, 0, -1));
+        return glm::lookAt( _position, _lookAt, _upVec );
     }
 
     glm::vec3           _position;
     glm::vec3           _lookAt;
+    glm::vec3           _upVec = glm::vec3(0.0f, 0.0f, 1.0f);
 
     glm::mat4           _viewMatrix;
     bool                _viewDirty = true;

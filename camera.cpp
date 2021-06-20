@@ -12,12 +12,13 @@
 // -----------------------------------------------------------------------------
 void Camera::OnEvent( Event &evt )
 {
+    // https://learnopengl.com/Getting-started/Camera
     auto evtType = evt.GetEventType();
 
     static bool buttonPressed = false;
     static bool dragging = false;
-    static int startDragX = 0;
-    static int startDragY = 0;
+    static int prevDragX = 0;
+    static int prevDragY = 0;
 
     switch ( evtType )
     {
@@ -27,21 +28,30 @@ void Camera::OnEvent( Event &evt )
         dragging = buttonPressed;
         if ( dragging )
         {
+            // keep the camera centerd at look at and rotate it
+            // 1. about upvec for x delta and
             const glm::vec3 &cor = GetLookAt();
             const glm::vec3 &pos = GetPosition();
-            int dx = mouseEvt.X() - startDragX;
-            if ( dx != 0 )
-                dx = dx / std::abs( dx );
-            startDragX = mouseEvt.X();
-            startDragY = mouseEvt.Y();
-            double dtheta = 2.0 * dx * M_PI / 180.0;
-            double theta = std::atan2( pos[1], pos[0] );
-            double len = std::sqrt( pos[0] * pos[0] + pos[1] * pos[1] );
-            theta += dtheta;
-            glm::vec3 newpos = pos;
-            newpos[0] = static_cast<float>(len * std::cos( theta ));
-            newpos[1] = static_cast<float>(len * std::sin( theta ));
-            SetPosition( newpos );
+
+            float dist = glm::length( GetPosition() - GetLookAt() );
+            glm::vec3 cameraDirection = glm::normalize( GetPosition() - GetLookAt() );
+            glm::vec3 cameraRight = glm::normalize( glm::cross( GetUpVec(), cameraDirection ) );
+            glm::vec3 cameraUp = glm::cross( cameraDirection, cameraRight );
+
+            int xPixelMove = mouseEvt.X() - prevDragX;
+            double dthetaX = -1.0 * xPixelMove * (1.0 / 5.0) * (M_PI / 180.0); // 1 deg rotation per 5 pixel move
+            int yPixelMove = mouseEvt.Y() - prevDragY;
+            double dthetaY = -1.0 * yPixelMove * (1.0 / 5.0) * (M_PI / 180.0); // 1 deg rotation per 5 pixel move
+
+            glm::mat4 identity(1.0f);
+            glm::mat4 r = glm::rotate( identity, static_cast<float>(dthetaX), cameraUp );
+            r = glm::rotate( r, static_cast<float>(dthetaY), cameraRight );
+            glm::vec4 newDir = r * glm::vec4( cameraDirection, 1.0f );
+
+            SetPosition( cor + dist * glm::vec3( newDir[0], newDir[1], newDir[2] ) );
+
+            prevDragX = mouseEvt.X();
+            prevDragY = mouseEvt.Y();
         }
         break;
     }
@@ -51,8 +61,8 @@ void Camera::OnEvent( Event &evt )
         if ( mouseEvt.GetButton() == MouseEvent::Button::MIDDLE )
         {
             buttonPressed = true;
-            startDragX = mouseEvt.X();
-            startDragY = mouseEvt.Y();
+            prevDragX = mouseEvt.X();
+            prevDragY = mouseEvt.Y();
         }
         break;
     }
@@ -79,10 +89,33 @@ void Camera::OnEvent( Event &evt )
     case EventType::KeyPressed:
     {
         auto &keyEvent = static_cast<KeyPressedEvent &>(evt);
-        if ( keyEvent.GetKeyCode() == GLFW_KEY_F )
+        const float cameraSpeed = 0.5f;
+        glm::vec3 cameraPos = GetPosition();
+        glm::vec3 cameraFront = glm::normalize( GetLookAt() - GetPosition() );
+        glm::vec3 cameraUp = GetUpVec();
+
+        if ( keyEvent.GetKeyCode() == GLFW_KEY_W )
         {
-            std::cout << "Fit to view... unimplemented!\n";
+            cameraPos += cameraSpeed * cameraFront;
         }
+        else if ( keyEvent.GetKeyCode() == GLFW_KEY_S )
+        {
+            cameraPos -= cameraSpeed * cameraFront;
+        }
+        else if ( keyEvent.GetKeyCode() == GLFW_KEY_A )
+        {
+            cameraPos -= glm::normalize( glm::cross( cameraFront, cameraUp ) ) * cameraSpeed;
+        }
+        else if ( keyEvent.GetKeyCode() == GLFW_KEY_D )
+        {
+            cameraPos += glm::normalize( glm::cross( cameraFront, cameraUp ) ) * cameraSpeed;
+        }
+
+        SetPosition( cameraPos );
+
+        glm::vec3 newLookAt = cameraPos + cameraFront;
+        SetLookAt( newLookAt );
+
         break;
     }
     case EventType::WindowResize:
