@@ -125,7 +125,7 @@ void TestsApplication::Update()
 
     if ( _currentTest )
     {
-        double time = glfwGetTime();
+        float time = static_cast<float>(glfwGetTime());
         _currentTest->OnUpdate( time );
         _currentTest->OnRender();
         if ( _currentTest != _testMenu && ImGui::Button( "< " ) )

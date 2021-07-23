@@ -32,6 +32,7 @@ add_compile_options(-DNOMINMAX)
 
 # for definition of M_PI for msvc
 add_compile_options(-D_USE_MATH_DEFINES)
+add_compile_options(-D_CRT_SECURE_NO_WARNINGS)
 
 add_executable (app vendor/stb_image/stb_image.cpp ${imgui_src} ${utils_src} ${chess_src} ${tests_src} ${main_src})
 

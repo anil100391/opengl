@@ -186,68 +186,8 @@ void TestFrameBuffer::OnEvent( Event &evt )
 {
     auto evtType = evt.GetEventType();
 
-    static bool buttonPressed = false;
-    static bool dragging = false;
-    static int startDragX = 0;
-    static int startDragY = 0;
-
     switch (evtType)
     {
-        case EventType::MouseMoved:
-        {
-            auto& mouseEvt = static_cast<MouseMoveEvent&>(evt);
-            dragging = buttonPressed;
-            if ( dragging )
-            {
-                const glm::vec3& cor = _camera.GetLookAt();
-                const glm::vec3& pos = _camera.GetPosition();
-                int dx = mouseEvt.X() - startDragX;
-                if ( dx != 0 )
-                    dx = dx / abs(dx);
-                startDragX = mouseEvt.X();
-                startDragY = mouseEvt.Y();
-                double dtheta = 2.0 * dx * M_PI / 180.0;
-                double theta = std::atan2(pos[1], pos[0]);
-                double len = std::sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
-                theta += dtheta;
-                glm::vec3 newpos = pos;
-                newpos[0] = len * std::cos(theta);
-                newpos[1] = len * std::sin(theta);
-                _camera.SetPosition(newpos);
-            }
-            break;
-        }
-        case EventType::MouseButtonPressed:
-        {
-            auto& mouseEvt = static_cast<MousePressedEvent&>(evt);
-            if ( mouseEvt.GetButton() == MouseEvent::Button::MIDDLE )
-            {
-                buttonPressed = true;
-                startDragX = mouseEvt.X();
-                startDragY = mouseEvt.Y();
-            }
-            break;
-        }
-        case EventType::MouseButtonReleased:
-        {
-            auto& mouseEvt = static_cast<MouseReleasedEvent&>(evt);
-            if ( mouseEvt.GetButton() == MouseEvent::Button::MIDDLE )
-            {
-                buttonPressed = false;
-            }
-            break;
-        }
-        case EventType::MouseScrolled:
-        {
-            auto& mouseEvt = static_cast<MouseScrollEvent&>(evt);
-            const auto& lookAt = _camera.GetLookAt();
-            const auto& eye    = _camera.GetPosition();
-            glm::vec3 dir = eye - lookAt;
-            float scale = 0.1f * mouseEvt.YOffset();
-            dir = dir +  dir * scale;
-            _camera.SetPosition(lookAt + dir);
-            break;
-        }
         case EventType::KeyPressed:
         {
             auto& keyEvent = static_cast<KeyPressedEvent&>(evt);
@@ -258,9 +198,15 @@ void TestFrameBuffer::OnEvent( Event &evt )
             }
             break;
         }
+        case EventType::MouseMoved:
+        case EventType::MouseButtonPressed:
+        case EventType::MouseButtonReleased:
+        case EventType::MouseScrolled:
         case EventType::WindowResize:
         default: break;
     }
+
+    _camera.OnEvent( evt );
 }
 
 // -----------------------------------------------------------------------------

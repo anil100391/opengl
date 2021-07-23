@@ -117,7 +117,7 @@ std::vector<float> mbos::ComputeVertexNormals(const mesh& m, bool flatShading)
         vnormals.resize(m._vertices.size(), 0.0f);
     }
 
-    auto smoothNormEvaluator = [&vnormals, &m](unsigned int tria)
+    auto smoothNormEvaluator = [&vnormals, &m](size_t tria)
     {
         const mesh::triface &tri = m._trias[tria];
         const float *n = getNormal(&m._vertices[3*tri[0]],

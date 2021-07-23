@@ -637,7 +637,7 @@ void TestChess::MakeEngineMove()
     if ( !rngInit )
     {
         rngInit = true;
-        srand( time( 0 ) );
+        srand( static_cast<unsigned int>(time( 0 )) );
     }
 
     float r = (1.0f * rand()) / RAND_MAX;
@@ -679,8 +679,8 @@ int TestChess::SquareAt( int x, int y ) const
     else
         yoffset = 0.5f * (h - w);
 
-    int rank = (y - yoffset) / size;
-    int file = (x - xoffset) / size;
+    int rank = static_cast<int>((y - yoffset) / size);
+    int file = static_cast<int>((x - xoffset) / size);
 
     if ( rank < 0 || rank >= 8 || file < 0 || file >= 8 )
         return -1;

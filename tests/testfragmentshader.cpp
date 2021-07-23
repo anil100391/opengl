@@ -21,8 +21,8 @@ TestFragmentShader::TestFragmentShader(Application *app)
       _centerY(0.0f)
 {
     _app->GetWindowSize(_windowWidth, _windowHeight);
-    float w = _windowWidth;
-    float h = _windowHeight;
+    float w = static_cast<float>(_windowWidth);
+    float h = static_cast<float>(_windowHeight);
     std::vector<float> positions = { 0.0f, 0.0f, 0.0f, 0.0f,
                                      w,    0.0f, 1.0f, 0.0f,
                                      w,    h,    1.0f, 1.0f,
@@ -120,8 +120,8 @@ void TestFragmentShader::OnEvent(Event &evt)
             float ar = 1.0f * _windowWidth / _windowHeight;
             float spanX = _spanY * ar;
             float spanY = _spanY;
-            float minCornerX = _centerX - 0.5 * spanX;
-            float minCornerY = _centerY - 0.5 * spanY;
+            float minCornerX = _centerX - 0.5f * spanX;
+            float minCornerY = _centerY - 0.5f * spanY;
             _mouseX = minCornerX + (spanX * mouseEvt.X()) / _windowWidth;
             _mouseY = minCornerY + (spanY * (_windowHeight - mouseEvt.Y())) / _windowHeight;
             break;
@@ -130,7 +130,7 @@ void TestFragmentShader::OnEvent(Event &evt)
         {
             auto& mouseEvt = static_cast<MouseScrollEvent&>(evt);
             float oldSize = _spanY;
-            _spanY += (0.1 * mouseEvt.YOffset());
+            _spanY += static_cast<float>((0.1 * mouseEvt.YOffset()));
             if ( _spanY < 0.001f )
             {
                 _spanY = oldSize;

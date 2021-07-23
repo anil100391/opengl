@@ -27,15 +27,15 @@ void TestLorenz::CreateLorenzGLBuffers()
     std::vector<float> vertices;
     std::vector<unsigned int> conn;
 
-    float h = 0.01,
-          a = 10.0,
-          b = 28.0,
-          c = 8.0 / 3.0;
+    float h = 0.01f,
+          a = 10.0f,
+          b = 28.0f,
+          c = 8.0f / 3.0f;
 
-    float x0 = 0.1;
-    float y0 = 0;
-    float z0 = 0;
-    float t  = 0;
+    float x0 = 0.1f;
+    float y0 = 0.0f;
+    float z0 = 0.0f;
+    float t  = 0.0f;
 
     int iterations = _iterations;
 
@@ -69,11 +69,11 @@ void TestLorenz::CreateLorenzGLBuffers()
     layout.Push<float>(3); // position
 
     _vao = std::make_unique<VertexArray>();
-    _vbo = std::make_unique<VertexBuffer>( vertices.data(), vertices.size() * sizeof( float ) );
+    _vbo = std::make_unique<VertexBuffer>( vertices.data(), static_cast<unsigned int>(vertices.size() * sizeof( float )) );
 
     _vao->AddBuffer( *_vbo, layout );
 
-    _ibo = std::make_unique<IndexBuffer>( conn.data(), conn.size() );
+    _ibo = std::make_unique<IndexBuffer>( conn.data(), static_cast<unsigned int>(conn.size()) );
 
     // Update camera to keep everything in frame
     box3 bbox;
@@ -142,36 +142,12 @@ void TestLorenz::OnEvent( Event &evt )
 {
     auto evtType = evt.GetEventType();
 
-    static bool buttonPressed = false;
-    static bool dragging = false;
-    static int startDragX = 0;
-    static int startDragY = 0;
     static int currIterations = _iterations;
 
     switch (evtType)
     {
         case EventType::MouseMoved:
         {
-            auto& mouseEvt = static_cast<MouseMoveEvent&>(evt);
-            dragging = buttonPressed;
-            if ( dragging )
-            {
-                const glm::vec3& cor = _camera.GetLookAt();
-                const glm::vec3& pos = _camera.GetPosition();
-                int dx = mouseEvt.X() - startDragX;
-                if ( dx != 0 )
-                    dx = dx / abs(dx);
-                startDragX = mouseEvt.X();
-                startDragY = mouseEvt.Y();
-                double dtheta = 2.0 * dx * M_PI / 180.0;
-                double theta = std::atan2(pos[1], pos[0]);
-                double len = std::sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
-                theta += dtheta;
-                glm::vec3 newpos = pos;
-                newpos[0] = len * std::cos(theta);
-                newpos[1] = len * std::sin(theta);
-                _camera.SetPosition(newpos);
-            }
             if ( currIterations != _iterations )
             {
                 currIterations = _iterations;
@@ -180,42 +156,13 @@ void TestLorenz::OnEvent( Event &evt )
             break;
         }
         case EventType::MouseButtonPressed:
-        {
-            auto& mouseEvt = static_cast<MousePressedEvent&>(evt);
-            if ( mouseEvt.GetButton() == MouseEvent::Button::MIDDLE )
-            {
-                buttonPressed = true;
-                startDragX = mouseEvt.X();
-                startDragY = mouseEvt.Y();
-            }
-            break;
-        }
         case EventType::MouseButtonReleased:
-        {
-            auto& mouseEvt = static_cast<MouseReleasedEvent&>(evt);
-            if ( mouseEvt.GetButton() == MouseEvent::Button::MIDDLE )
-            {
-                buttonPressed = false;
-            }
-            break;
-        }
         case EventType::MouseScrolled:
-        {
-            auto& mouseEvt = static_cast<MouseScrollEvent&>(evt);
-            const auto& lookAt = _camera.GetLookAt();
-            const auto& eye    = _camera.GetPosition();
-            glm::vec3 dir = eye - lookAt;
-            float scale = 0.1f * mouseEvt.YOffset();
-            dir = dir +  dir * scale;
-            _camera.SetPosition(lookAt + dir);
-            break;
-        }
         case EventType::KeyPressed:
-        {
-            break;
-        }
         case EventType::WindowResize:
         default: break;
     }
+
+    _camera.OnEvent( evt );
 }
 }
