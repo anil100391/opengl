@@ -8,6 +8,7 @@
 #include "tests/testtexture2d.h"
 #include "tests/testimageviewer.h"
 #include "tests/testchess.h"
+#include "tests/testludo.h"
 #include "tests/testgame.h"
 #include "tests/testlorenz.h"
 #include "tests/testframebuffer.h"
@@ -79,6 +80,7 @@ TestsApplication::TestsApplication() : Application( {1920, 1080, "TESTS"} )
     _testMenu->RegisterTest<test::TestFragmentShader>( "Fractals" );
     _testMenu->RegisterTest<test::TestLorenz>( "Lorenz Attractor" );
     _testMenu->RegisterTest<test::TestChess>( "Chess" );
+    _testMenu->RegisterTest<test::TestLudo>( "Ludo" );
     _testMenu->RegisterTest<test::TestGame>( "Game" );
     _testMenu->RegisterTest<test::TestFrameBuffer>( "FrameBuffers" );
     _testMenu->RegisterTest<test::TestText>( "Text" );

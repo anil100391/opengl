@@ -23,6 +23,7 @@ link_directories ("${PROJECT_SOURCE_DIR}/vendor/irrKlang/lib")
 
 file (GLOB tests_src "${PROJECT_SOURCE_DIR}/tests/*.cpp" )
 file (GLOB chess_src "${PROJECT_SOURCE_DIR}/tests/chess/board.cpp" "${PROJECT_SOURCE_DIR}/tests/chess/zobristkeys.cpp" )
+file (GLOB ludo_src "${PROJECT_SOURCE_DIR}/tests/ludo/*.cpp" )
 file (GLOB utils_src "${PROJECT_SOURCE_DIR}/utils/*.cpp" )
 file (GLOB imgui_src "${PROJECT_SOURCE_DIR}/vendor/imgui/*.cpp" )
 file (GLOB main_src "${PROJECT_SOURCE_DIR}/*.cpp" )
@@ -34,7 +35,7 @@ add_compile_options(-DNOMINMAX)
 add_compile_options(-D_USE_MATH_DEFINES)
 add_compile_options(-D_CRT_SECURE_NO_WARNINGS)
 
-add_executable (app vendor/stb_image/stb_image.cpp ${imgui_src} ${utils_src} ${chess_src} ${tests_src} ${main_src})
+add_executable (app vendor/stb_image/stb_image.cpp ${imgui_src} ${utils_src} ${chess_src} ${ludo_src} ${tests_src} ${main_src})
 
 if (MSVC)
     target_link_libraries (app PRIVATE glfw GLEW::GLEW opengl32 freetype irrKlang.lib)
