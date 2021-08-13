@@ -97,6 +97,7 @@ int lboard<PLAYERS>::toBoardSq( int pieceSq, unsigned int player )
                                                14 * 15 + 8,
                                                 6 * 15 + 14 };
 
+    bool finalZone = pieceSq > 6 * 15 + 14;
     auto zone = []( int player )
     {
         return player % 4;
@@ -106,19 +107,19 @@ int lboard<PLAYERS>::toBoardSq( int pieceSq, unsigned int player )
     if ( pieceSq <= 12 )
     {
     }
-    else if ( pieceSq <= 24 )
+    else if ( pieceSq <= 25 )
     {
-        pieceSq -= 12;
+        pieceSq -= 13;
         z = zone( player + 1 );
     }
-    else if ( pieceSq <= 36 )
+    else if ( pieceSq <= 38 )
     {
-        pieceSq -= 24;
+        pieceSq -= 26;
         z = zone( player + 2 );
     }
     else
     {
-        pieceSq -= 36;
+        pieceSq -= 39;
         z = zone( player + 3 );
     }
 
@@ -197,8 +198,26 @@ int lboard<PLAYERS>::toBoardSq( int pieceSq, unsigned int player )
         }
         else if ( z == 3 )
         {
-            row = 0;
-            col = 8 - (pieceSq - 10);
+            if ( player == 0 )
+            {
+                row = pieceSq - 10 - 1;
+                col = 7;
+            }
+            else if ( player == 1 )
+            {
+                row = 7;
+                col = pieceSq - 10 - 1;
+            }
+            else if ( player == 2 )
+            {
+                row = 15 - (pieceSq - 1);
+                col = 7;
+            }
+            else if ( player == 3 )
+            {
+                row = 7;
+                col = 15 - (pieceSq - 1);
+            }
         }
 
         return row * 15 + col;

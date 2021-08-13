@@ -71,11 +71,12 @@ void TestLudo::OnRender()
 // -----------------------------------------------------------------------------
 void TestLudo::OnImGuiRender()
 {
-    if ( ImGui::CollapsingHeader( "Tweaks" ) )
+    //if ( ImGui::CollapsingHeader( "Tweaks" ) )
     {
         ImGui::SliderFloat( "Piece Size", &_relativePieceSize, 0.5f, 1.0f );
         ImGui::ColorEdit4( "Dark Square", &_darkColor[0] );
         ImGui::ColorEdit4( "Light Square", &_lightColor[0] );
+        ImGui::ColorEdit4( "Stop Color", &_stopColor[0] );
         ImGui::ColorEdit4( "Highlight Square", &_highlightColor[0] );
         ImGui::SliderFloat3( "Camera", &_camPos[0], -20, 20 );
         if ( ImGui::Button( "Roll" ) )
@@ -263,6 +264,16 @@ void TestLudo::Generate3DPieceGLBuffers()
 void TestLudo::Generate2DPieceGLBuffers()
 {
     _pieces.clear();
+
+    _pieces.emplace_back( std::make_unique<PieceGL>( TestLudo::PieceGL::Type::red, _st == SCENE::TWOD, this ) );
+    _pieces.emplace_back( std::make_unique<PieceGL>( TestLudo::PieceGL::Type::blue, _st == SCENE::TWOD, this ) );
+    _pieces.emplace_back( std::make_unique<PieceGL>( TestLudo::PieceGL::Type::green, _st == SCENE::TWOD, this ) );
+    _pieces.emplace_back( std::make_unique<PieceGL>( TestLudo::PieceGL::Type::yellow, _st == SCENE::TWOD, this ) );
+
+    if ( !_shaderp )
+    {
+        _shaderp = std::make_unique<Shader>( "res/shaders/ludoPiece.shader" );
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -337,14 +348,12 @@ void TestLudo::Draw2DBoard()
         players = _board.getPlayersAtLocation( row, col );
 
         bool invalidSq = (players.find( '-' ) != std::string::npos);
-        bool xSq = (players.find( 'X' ) != std::string::npos);
-        bool oSq = (players.find( 'O' ) != std::string::npos);
 
         glm::mat4 model = glm::translate(offset, glm::vec3(size * col, size * row, 0));
         glm::mat4 mvp = _projMat * _viewMat * model;
         _shaderb->SetUniformMat4f("u_MVP", mvp);
 
-        _shaderb->SetUniform1i( "u_Highlighted", (xSq || oSq) ? 1 : 0 );
+        _shaderb->SetUniform1i( "u_Highlighted", 0 );
         _shaderb->SetUniform1i("u_CellIndex", ii);
         _shaderb->SetUniform1i("u_CellType", invalidSq ? 0 : 1);
         _shaderb->SetUniform1f("u_Size", size);
@@ -391,7 +400,6 @@ void TestLudo::Draw2DBoard()
 // -----------------------------------------------------------------------------
 void TestLudo::DrawPieces()
 {
-    return;
     if ( _st == SCENE::TWOD )
     {
         Draw2DPieces();
@@ -427,7 +435,7 @@ void TestLudo::Draw3DPieces()
 // -----------------------------------------------------------------------------
 void TestLudo::Draw2DPieces()
 {
-    // Renderer renderer;
+    Renderer renderer;
     _shaderp->Bind();
 
     int w = 0;
@@ -435,7 +443,7 @@ void TestLudo::Draw2DPieces()
     _app->GetWindowSize(w, h);
     _projMat = glm::ortho(0.0f, 1.0f * w, 0.0f, 1.0f * h, -1.0f, 1.0f);
 
-    float size = std::min(w, h) / 8.0f;
+    float size = std::min(w, h) / 15.0f;
 
     glm::mat4 offset;
     if (w > h)
@@ -445,6 +453,38 @@ void TestLudo::Draw2DPieces()
     else
     {
         offset = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f * (h - w), 0.0f));
+    }
+
+    // loop over pieces
+    std::string players;
+    for (unsigned int ii = 0; ii < 225; ++ii )
+    {
+        unsigned int row = ii / 15;
+        unsigned int col = ii % 15;
+
+        players = _board.getPlayersAtLocation( row, col );
+
+        bool invalidSq = (players.find( '-' ) != std::string::npos);
+        if ( invalidSq )
+            continue;
+
+        bool xSq = (players.find( 'X' ) != std::string::npos);
+        bool ySq = (players.find( 'O' ) != std::string::npos);
+        if ( !xSq && !ySq )
+            continue;
+
+        glm::mat4 model = glm::translate(offset, glm::vec3(size * col, size * row, 0));
+        glm::mat4 mvp = _projMat * _viewMat * model;
+        _shaderp->SetUniformMat4f("u_MVP", mvp);
+
+        _shaderp->SetUniform1i("u_CellIndex", ii);
+        _shaderp->SetUniform1i("u_CellType", invalidSq ? 0 : 1);
+        _shaderp->SetUniform1f("u_Size", size);
+        _shaderp->SetUniform2f("u_CellOrigin", model[3][0], model[3][1]);
+        _shaderp->SetUniform4f("u_Color", xSq ? glm::vec4(1.0f, 0.0f, 0.0f, 1.0f) : glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+        auto pgl = _pieces[xSq ? 0 : 1].get();
+        renderer.Draw(*pgl->vao(), *pgl->ibo(), *_shaderp);
     }
 }
 
@@ -465,6 +505,7 @@ std::array<std::array<float, 8>, 12> TestLudo::PieceGL::GetPieceTexCoordinates()
     using PT = TestLudo::PieceGL::Type;
     auto to_int = []( PT pt ) { return static_cast<int>(pt); };
 
+    /*
     data[to_int(PT::white_king)]   = { 0 * dx, 1 * dy, 1 * dx, 1 * dy, 1 * dx, 2 * dy, 0 * dx, 2 * dy };
     data[to_int(PT::white_queen)]  = { 1 * dx, 1 * dy, 2 * dx, 1 * dy, 2 * dx, 2 * dy, 1 * dx, 2 * dy };
     data[to_int(PT::white_bishop)] = { 2 * dx, 1 * dy, 3 * dx, 1 * dy, 3 * dx, 2 * dy, 2 * dx, 2 * dy };
@@ -478,6 +519,7 @@ std::array<std::array<float, 8>, 12> TestLudo::PieceGL::GetPieceTexCoordinates()
     data[to_int(PT::black_knight)] = { 3 * dx, 0 * dy, 4 * dx, 0 * dy, 4 * dx, 1 * dy, 3 * dx, 1 * dy };
     data[to_int(PT::black_rook)]   = { 4 * dx, 0 * dy, 5 * dx, 0 * dy, 5 * dx, 1 * dy, 4 * dx, 1 * dy };
     data[to_int(PT::black_pawn)]   = { 5 * dx, 0 * dy, 6 * dx, 0 * dy, 6 * dx, 1 * dy, 5 * dx, 1 * dy };
+    */
     return data;
 }
 
@@ -511,45 +553,6 @@ void TestLudo::PieceGL::GeneratePieceGLBuffers()
 // -----------------------------------------------------------------------------
 void TestLudo::PieceGL::Generate3DPieceGLBuffers()
 {
-    std::unique_ptr<mesh> m = nullptr;
-    switch ( _type )
-    {
-    case Type::black_rook:
-    case Type::white_rook:
-        m = std::make_unique<mesh>( "res/chess/rook.obj" );
-        break;
-    case Type::black_knight:
-    case Type::white_knight:
-        m = std::make_unique<mesh>( "res/chess/knight.obj" );
-        break;
-    case Type::black_bishop:
-    case Type::white_bishop:
-        m = std::make_unique<mesh>( "res/chess/bishop.obj" );
-        break;
-    case Type::black_queen:
-    case Type::white_queen:
-        m = std::make_unique<mesh>( "res/chess/queen.obj" );
-        break;
-    case Type::black_king:
-    case Type::white_king:
-        m = std::make_unique<mesh>( "res/chess/king.obj" );
-        break;
-    case Type::black_pawn:
-    case Type::white_pawn:
-        m = std::make_unique<mesh>( "res/chess/pawn.obj" );
-        break;
-    }
-
-    assert( m != nullptr );
-    std::vector<float> vertices = mbos::vbo( *m, false );
-    std::vector<unsigned int> conn = mbos::ibo( *m, false );
-
-    VertexBufferLayout layout;
-    layout.Push<float>(3); // position
-    layout.Push<float>(3); // normal
-    layout.Push<float>(2); // texture coordinate
-
-    PopulateBuffers( vertices, layout, conn );
 }
 
 // -----------------------------------------------------------------------------
@@ -558,9 +561,10 @@ void TestLudo::PieceGL::Generate2DPieceGLBuffers()
 {
     int w = 0, h = 0;
     _parent->_app->GetWindowSize(w, h);
-    float size = std::min(w, h) / 8.0f;
+    float size = std::min(w, h) / 15.0f;
     size *= _parent->_relativePieceSize;
 
+    /*
     const std::array<float, 8> &texCoord = s_texCoords[static_cast<int>(_type)];
 
     std::vector<float> vertices = { 0.0f, 0.0f, texCoord[0], texCoord[1],
@@ -574,6 +578,18 @@ void TestLudo::PieceGL::Generate2DPieceGLBuffers()
     VertexBufferLayout layout;
     layout.Push<float>(2); // vertex
     layout.Push<float>(2); // texture coordinate
+    */
+
+    std::vector<float> vertices = { 0.0f, 0.0f,
+                                    size, 0.0f,
+                                    size, size,
+                                    0.0f, size };
+
+    std::vector<unsigned int> conn = { 0, 1, 2,
+                                       2, 3, 0 };
+
+    VertexBufferLayout layout;
+    layout.Push<float>(2); // vertex
 
     PopulateBuffers( vertices, layout, conn );
 }

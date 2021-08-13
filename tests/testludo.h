@@ -48,8 +48,7 @@ private:
 
         enum class Type
         {
-            white_king, white_queen, white_bishop, white_knight, white_rook, white_pawn,
-            black_king, black_queen, black_bishop, black_knight, black_rook, black_pawn
+            red, blue, green, yellow
         };
 
         PieceGL( Type type, bool twod, TestLudo *parent );
@@ -123,10 +122,10 @@ private:
     lboard<2u>                      _board;
 
     // parameters
-    float                           _relativePieceSize = 0.95f;
+    float                           _relativePieceSize = 1.0f;
     glm::vec4                       _darkColor = {0.0f, 0.0f, 0.0f, 1.0f};
     glm::vec4                       _lightColor = {1.0f, 1.0f, 1.0f, 1.0f};
-    glm::vec4                       _stopColor = {1.0f, 0.2f, 0.0f, 1.0f};
+    glm::vec4                       _stopColor = { 0.8588f, 0.7058f, 0.1333f, 1.0f};
     glm::vec4                       _highlightColor = {0.75f, 0.75f, 0.25f, 1.0f};
 
     irrklang::ISoundEngine          *_soundEngine = nullptr;
