@@ -44,7 +44,7 @@ uniform vec4 u_HighlightColor;
 // -----------------------------------------------------------------------------
 float plot( vec2 xy )
 {
-    return smoothstep( 0.0, 0.15, abs( fract( xy.x ) - fract( xy.y ) ) );
+    return smoothstep( 0.0, 0.10, min( fract( xy.x ), fract( xy.y ) ) );
 }
 
 // -----------------------------------------------------------------------------
@@ -67,6 +67,13 @@ void main()
     if ( u_Highlighted != 0 )
         color = color * u_HighlightColor;
 
-   color = vec4( vec3(color.r, color.g, color.b), 1.0f );
+    vec2 coord = vec2( gl_FragCoord ) - u_CellOrigin;
+    coord = coord / u_Size;
+    float fac = plot( coord );
+    color = color * ((1.0f - fac) * u_InvalidCellColor + fac * u_RegularCellColor);
+
+    // vec2 coord = vec2( gl_FragCoord ) - u_CellOrigin;
+    // coord = coord / u_Size;
+    // color = (u_CellIndex / 225.0f) * color;
 }
 
