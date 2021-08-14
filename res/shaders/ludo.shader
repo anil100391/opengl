@@ -44,7 +44,7 @@ uniform vec4 u_HighlightColor;
 // -----------------------------------------------------------------------------
 float plot( vec2 xy )
 {
-    return smoothstep( 0.0, 0.10, min( fract( xy.x ), fract( xy.y ) ) );
+    return smoothstep(0.0, 0.05, min(min(min(fract(xy.x), fract(xy.y)), fract(1.0 - xy.x)), fract(1.0 - xy.y)));
 }
 
 // -----------------------------------------------------------------------------

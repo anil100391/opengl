@@ -49,14 +49,9 @@ void main()
 {
     color = vec4(u_Color);
     float radius = length( vec2( gl_FragCoord ) - (u_CellOrigin + u_Size / 2) );
-    float pieceSizeRelativeToCell = 1.2;
-    float fac = min( 2.0 * pieceSizeRelativeToCell * radius / length( u_Size ), 1.0 );
-    if ( fac < 1.0f )
-        fac = 1.0;
-    else
-        fac = 0.0;
-    color = vec4( color.rgb * fac, fac );
-    // color = vec4( vec3( fac ), 1.0 );
+    float fac = step(-0.8, -2.0 * radius / u_Size);
+    float ringsFac = sqrt(4.0 * mod(2.0 * radius / u_Size, 0.25));
+    color = vec4(mix(color.rgb, 0.7 * color.rgb, ringsFac), fac);
 
     /*
     vec2 coord = vec2( gl_FragCoord ) - u_CellOrigin;
