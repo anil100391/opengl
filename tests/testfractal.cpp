@@ -1,4 +1,4 @@
-#include "testfragmentshader.h"
+#include "testfractal.h"
 #include "../renderer.h"
 #include <imgui.h>
 #include <glm/glm.hpp>
@@ -12,7 +12,7 @@ namespace test
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestFragmentShader::TestFragmentShader(Application *app)
+TestFractal::TestFractal(Application *app)
     : Test(app),
       _mouseX(0.354f),
       _mouseY(0.361f),
@@ -20,26 +20,13 @@ TestFragmentShader::TestFragmentShader(Application *app)
       _centerX(0.0f),
       _centerY(0.0f)
 {
-    _app->GetWindowSize(_windowWidth, _windowHeight);
-    float w = static_cast<float>(_windowWidth);
-    float h = static_cast<float>(_windowHeight);
-    std::vector<float> positions = { 0.0f, 0.0f, 0.0f, 0.0f,
-                                     w,    0.0f, 1.0f, 0.0f,
-                                     w,    h,    1.0f, 1.0f,
-                                     0.0f, h,    0.0f, 1.0f };
-
-    std::vector<unsigned int> indices = { 0, 1, 2, 0, 2, 3 };
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glDisable(GL_DEPTH_TEST);
 
-    VertexBufferLayout layout;
-    layout.Push<float>(2);
-    layout.Push<float>(2);
-
-    _quadGL = std::make_unique<MeshGL>( positions, layout, indices );
+    _app->GetWindowSize(_windowWidth, _windowHeight);
+    PopulateMeshBuffers();
 
     _shader = std::make_unique<Shader>("res/shaders/julia.shader");
     _shader->Bind();
@@ -47,26 +34,45 @@ TestFragmentShader::TestFragmentShader(Application *app)
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-TestFragmentShader::~TestFragmentShader()
+TestFractal::~TestFractal()
 {
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void TestFragmentShader::OnUpdate(float deltaTime)
+void TestFractal::OnUpdate(float deltaTime)
 {
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void TestFragmentShader::OnRender()
+void TestFractal::OnRender()
 {
     Draw();
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void TestFragmentShader::Draw()
+void TestFractal::PopulateMeshBuffers()
+{
+    float w = 1.0f * _windowWidth;
+    float h = 1.0f * _windowHeight;
+    std::vector<float> positions = { 0.0f, 0.0f, 0.0f, 0.0f,
+                                     w,    0.0f, 1.0f, 0.0f,
+                                     w,    h,    1.0f, 1.0f,
+                                     0.0f, h,    0.0f, 1.0f };
+
+    std::vector<unsigned int> indices = { 0, 1, 2, 0, 2, 3 };
+
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    layout.Push<float>(2);
+    _quadGL = std::make_unique<MeshGL>(positions, layout, indices);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void TestFractal::Draw()
 {
     Renderer renderer;
     glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
@@ -91,7 +97,7 @@ void TestFragmentShader::Draw()
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void TestFragmentShader::OnImGuiRender()
+void TestFractal::OnImGuiRender()
 {
     ImGui::SetNextItemOpen( true );
     if ( ImGui::CollapsingHeader( "Fractal Mode" ) )
@@ -106,7 +112,7 @@ void TestFragmentShader::OnImGuiRender()
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void TestFragmentShader::OnEvent(Event &evt)
+void TestFractal::OnEvent(Event &evt)
 {
     auto evtType = evt.GetEventType();
 
@@ -154,20 +160,7 @@ void TestFragmentShader::OnEvent(Event &evt)
             auto& wre = static_cast<WindowResizeEvent&>(evt);
             _windowWidth = wre.Width();
             _windowHeight = wre.Height();
-
-            float w = 1.0f * _windowWidth;
-            float h = 1.0f * _windowHeight;
-            std::vector<float> positions = { 0.0f, 0.0f, 0.0f, 0.0f,
-                                             w,    0.0f, 1.0f, 0.0f,
-                                             w,    h,    1.0f, 1.0f,
-                                             0.0f, h,    0.0f, 1.0f };
-
-            std::vector<unsigned int> indices = { 0, 1, 2, 0, 2, 3 };
-
-            VertexBufferLayout layout;
-            layout.Push<float>(2);
-            layout.Push<float>(2);
-            _quadGL = std::make_unique<MeshGL>( positions, layout, indices );
+            PopulateMeshBuffers();
             break;
         }
         default: break;

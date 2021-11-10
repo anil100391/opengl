@@ -3,7 +3,7 @@
 #include "app.h"
 
 #include "tests/testclearcolor.h"
-#include "tests/testfragmentshader.h"
+#include "tests/testfractal.h"
 #include "tests/testobjloader.h"
 #include "tests/testtexture2d.h"
 #include "tests/testimageviewer.h"
@@ -77,7 +77,7 @@ TestsApplication::TestsApplication() : Application( {1920, 1080, "TESTS"} )
     _testMenu->RegisterTest<test::TestTexture2D>( "2D Texture" );
     _testMenu->RegisterTest<test::TestImageViewer>( "Image Viewer" );
     _testMenu->RegisterTest<test::TestObjLoader>( "Obj Viewer" );
-    _testMenu->RegisterTest<test::TestFragmentShader>( "Fractals" );
+    _testMenu->RegisterTest<test::TestFractal>( "Fractals" );
     _testMenu->RegisterTest<test::TestLorenz>( "Lorenz Attractor" );
     _testMenu->RegisterTest<test::TestChess>( "Chess" );
     _testMenu->RegisterTest<test::TestLudo>( "Ludo" );
