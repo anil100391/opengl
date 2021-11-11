@@ -9,6 +9,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define USE_ASSIMP 1
+
+#ifdef USE_ASSIMP
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#endif
+
+
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 struct mesh
@@ -21,11 +30,18 @@ struct mesh
     mesh(const char* filename);
 
     std::string                _name;
-    std::string                _file;
     std::vector<float>         _vertices;
     std::vector<float>         _normals;
     std::vector<float>         _textureCoords;
     std::vector<triface>       _trias;
+
+#ifdef USE_ASSIMP
+    Assimp::Importer           _importer;
+    const aiScene             *_assimpScene = nullptr;
+    const aiMesh              *_assimpMesh  = nullptr;
+#endif
+
+    void initializeFromFile(const char* filename);
 
     [[nodiscard]] const glm::vec3& cog() const noexcept
     {
@@ -37,14 +53,22 @@ struct mesh
         return _bbox;
     }
 
-    bool        _smoothShading = true;
+    [[nodiscard]] bool IsSmoothShaded() const noexcept
+    {
+        return _smoothShaded;
+    }
+
+    void SetSmoothShaded(bool smooth)
+    {
+        _smoothShaded = smooth;
+    }
 
 private:
 
     void ComputeBBox();
     void ComputeCog();
 
-
+    bool        _smoothShaded = true;
     box3        _bbox;
     glm::vec3   _cog;
 };

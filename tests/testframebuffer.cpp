@@ -173,7 +173,7 @@ void TestFrameBuffer::OnImGuiRender()
     {
         auto file = _fileDialog.GetSelected().string();
         _fileDialog.ClearSelected();
-        _mesh = mesh(file.c_str());
+        _mesh.initializeFromFile(file.c_str());
         CreateMeshGLBuffers();
     }
 

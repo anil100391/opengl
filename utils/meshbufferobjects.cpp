@@ -2,37 +2,13 @@
 #include <numeric>
 #include "meshbufferobjects.h"
 
-#include <iostream>
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-#define USE_ASSIMP 1
-
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 std::vector<float> mbos::vbo(const mesh& m, bool flatShading)
 {
 #ifdef USE_ASSIMP
-    std::cout << "using assimp\n";
 
-    Assimp::Importer importer;
-
-    // And have it read the given file with some example postprocessing
-    // Usually - if speed is not the most important aspect for you - you'll
-    // probably to request more postprocessing than we do in this example.
-    std::cout << "importing: " << m._file << std::endl;
-    const aiScene* scene = importer.ReadFile( m._file,
-            aiProcess_CalcTangentSpace       |
-            aiProcess_Triangulate            |
-            aiProcess_JoinIdenticalVertices  |
-            aiProcess_SortByPType);
-
-    if ( !scene || !scene->HasMeshes() )
-        return {};
-
-    const aiMesh *mesh = scene->mMeshes[0];
+    const aiMesh *mesh = m._assimpMesh;
     size_t numVertices = mesh->mNumVertices;
     if (numVertices == 0)
         return {};
@@ -102,30 +78,13 @@ std::vector<float> mbos::vbo(const mesh& m, bool flatShading)
 std::vector<unsigned int> mbos::ibo(const mesh& m, bool flatShading)
 {
 #ifdef USE_ASSIMP
-    std::cout << "using assimp\n";
-
-    Assimp::Importer importer;
-
-    // And have it read the given file with some example postprocessing
-    // Usually - if speed is not the most important aspect for you - you'll
-    // probably to request more postprocessing than we do in this example.
-    std::cout << "importing: " << m._file << std::endl;
-    const aiScene* scene = importer.ReadFile( m._file,
-            aiProcess_CalcTangentSpace       |
-            aiProcess_Triangulate            |
-            aiProcess_JoinIdenticalVertices  |
-            aiProcess_SortByPType);
-
-    if ( !scene || !scene->HasMeshes() )
-        return {};
-
-    const aiMesh *mesh = scene->mMeshes[0];
+    const aiMesh *mesh = m._assimpMesh;
     size_t numFaces = mesh->mNumFaces;
     std::vector<unsigned int> conn(3 * numFaces);
-    for (int ii = 0; ii < numFaces; ++ii)
+    for (size_t ii = 0; ii < numFaces; ++ii)
     {
         const aiFace &face = mesh->mFaces[ii];
-        for (int jj = 0; jj < face.mNumIndices; ++jj)
+        for (size_t jj = 0; jj < face.mNumIndices; ++jj)
             conn.push_back(face.mIndices[jj]);
     }
 

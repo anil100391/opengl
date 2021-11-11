@@ -135,7 +135,7 @@ static bool parseline(const std::string &line, mesh& m)
         char smooth[8];
         if ( 2 == sscanf(line.data(), "%c %s", &c, smooth) )
         {
-            m._smoothShading = (strcmp(smooth, "1") == 0);
+            m.SetSmoothShaded(strcmp(smooth, "1") == 0);
         }
         break;
     }
@@ -155,9 +155,31 @@ static bool parseline(const std::string &line, mesh& m)
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 mesh::mesh(const char* filename)
-    : _name(filename),
-      _file(filename)
 {
+    initializeFromFile(filename);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void mesh::initializeFromFile(const char *filename)
+{
+    _name = filename;
+
+#ifdef USE_ASSIMP
+
+    unsigned int importFlags =  aiProcess_GenBoundingBoxes       |
+                                aiProcess_CalcTangentSpace       |
+                                aiProcess_Triangulate            |
+                                aiProcess_JoinIdenticalVertices  |
+                                aiProcess_SortByPType;
+
+    _assimpScene = _importer.ReadFile(filename, importFlags);
+    if (!_assimpScene || !_assimpScene->HasMeshes())
+        return;
+
+    _assimpMesh = _assimpScene ->mMeshes[0];
+
+#else
     std::ifstream obj(filename);
     if ( !obj.is_open() )
     {
@@ -176,6 +198,7 @@ mesh::mesh(const char* filename)
                        << " normals: " << _normals.size() / 3 << "\n"
                        << " tex coords: " << _textureCoords.size() / 2 << "\n"
                        << " trias: " << _trias.size() << "\n";
+#endif
     ComputeCog();
     ComputeBBox();
 }
@@ -184,6 +207,10 @@ mesh::mesh(const char* filename)
 // -----------------------------------------------------------------------------
 void mesh::ComputeCog()
 {
+#ifdef USE_ASSIMP
+    auto center = _assimpMesh->mAABB.mMin + _assimpMesh->mAABB.mMax;
+    _cog = glm::vec3(center[0], center[1], center[2]);
+#else
     float sum[3] = {0.0f, 0.0f, 0.0f};
     size_t numVertices = _vertices.size() / 3;
     for ( size_t ii = 0; ii < numVertices; ++ii )
@@ -196,6 +223,7 @@ void mesh::ComputeCog()
 
     _cog = glm::vec3(sum[0], sum[1], sum[2]);
     _cog /= numVertices;
+#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -203,10 +231,17 @@ void mesh::ComputeCog()
 void mesh::ComputeBBox()
 {
     _bbox = box3();
+#ifdef USE_ASSIMP
+    auto min = _assimpMesh->mAABB.mMin;
+    auto max = _assimpMesh->mAABB.mMax;
+    _bbox.expand(&min[0]);
+    _bbox.expand(&max[0]);
+#else
     size_t numVertices = _vertices.size() / 3;
     for ( size_t ii = 0; ii < numVertices; ++ii )
     {
         const float* v = &_vertices[3*ii];
         _bbox.expand(v);
     }
+#endif
 }
