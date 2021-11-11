@@ -2,20 +2,35 @@
 #define _testgame_h_
 
 #include "test.h"
-#include <memory>
-#include "../vertexarray.h"
-#include "../vertexbufferlayout.h"
-#include "../vertexbuffer.h"
-#include "../indexbuffer.h"
 #include "../shader.h"
-#include "../camera.h"
+#include "../texture.h"
 #include "../utils/mesh.h"
+#include "../utils/meshgl.h"
+#include "../light.h"
+#include "../camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <memory>
+#include <vector>
+#include <string>
+#include <utility>
+#include <iostream>
+
+// #include "../vendor/imgui/imgui.h"
+
 namespace test
 {
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+struct Asset
+{
+    std::unique_ptr<mesh>           _mesh;
+    std::unique_ptr<MeshGL>         _glMesh;
+    std::unique_ptr<Texture>        _texture;
+};
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -26,27 +41,39 @@ public:
     TestGame(Application *app);
     virtual ~TestGame();
 
-    virtual void OnUpdate(float deltaTime) override {}
+    virtual void OnUpdate(float deltaTime) override;
     virtual void OnRender() override;
-    virtual void OnImGuiRender() override {}
+    virtual void OnImGuiRender() override;
     virtual void OnEvent(Event &evt) override;
 
 private:
 
-    void SetupCamera();
-    void SetupTerrain();
+    void         CreateEarth();
+    void         CreatePlayer();
+    void         SetupCamera();
 
-    glm::vec4                       _color;
-    std::unique_ptr<VertexArray>    _vao;
-    std::unique_ptr<VertexBuffer>   _vbo;
-    std::unique_ptr<IndexBuffer>    _ibo;
+    const material& GetMaterial() const;
+    void            SetMaterial(const material& m);
+    pointlight      GetLight() const;
+
+    Asset                           _earth;
+    Asset                           _player;
+
+    glm::mat4                       _playerXform;
+    glm::vec3                       _playerOrientation;
+
     std::unique_ptr<Shader>         _shader;
 
-    mesh                            _mesh;
+    glm::mat4                       _viewMat;
+    glm::mat4                       _projMat;
+
+    material                        _material;
     Camera                          _camera;
 
+    double                          _time = 0.0;
+    bool                            _paused = true;
 };
 
 }
 
-#endif // _testgame_h_
+#endif // _testobjloader_h_
