@@ -15,6 +15,12 @@ std::vector<float> mbos::vbo(const mesh& m, bool flatShading)
 
     auto vertexPtr = mesh->mVertices;
     auto normalPtr = mesh->mNormals;
+    const aiVector3D *texcoordsPtr = nullptr;
+    if (mesh->HasTextureCoords(0))
+    {
+        texcoordsPtr = mesh->mTextureCoords[0];
+    }
+
     std::vector<float> vertices;
     vertices.reserve(numVertices * (3 + 3 + 2)); // pos + nor + texture coord
     for ( size_t ii = 0; ii < numVertices; ++ii)
@@ -38,9 +44,17 @@ std::vector<float> mbos::vbo(const mesh& m, bool flatShading)
             vertices.push_back(0.5773502691896258);
         }
 
-        // fake texture coordinates
-        vertices.push_back(0);
-        vertices.push_back(0);
+        if (texcoordsPtr)
+        {
+            vertices.push_back(texcoordsPtr[ii][0]);
+            vertices.push_back(texcoordsPtr[ii][1]);
+        }
+        else
+        {
+            // fake texture coordinates
+            vertices.push_back(0);
+            vertices.push_back(0);
+        }
     }
 
     return vertices;

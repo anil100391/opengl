@@ -65,9 +65,14 @@ uniform PointLight light;
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+uniform sampler2D u_Texture;
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 vec4 ComputePointLightContribution(PointLight plight, vec3 vposition, vec3 vnormal)
 {
-    vec4 texColor = vec4(vec3(0.7), 1.0);
+    // vec4 texColor = vec4(vec3(0.7), 1.0);
+    vec4 texColor = texture(u_Texture, v_TexCoord);
 
     // ambient
     // vec4 ambient = plight.ambient * material.ambient * texColor;
@@ -107,7 +112,8 @@ struct DirectionalLight
 // -----------------------------------------------------------------------------
 vec4 ComputeDirectionalLightContribution(DirectionalLight dlight, vec3 vposition, vec3 vnormal)
 {
-    vec4 texColor = vec4(vec3(0.7), 1.0);
+    // vec4 texColor = vec4(vec3(0.7), 1.0);
+    vec4 texColor = texture(u_Texture, v_TexCoord);
 
     // ambient
     // vec4 ambient = dlight.ambient * material.ambient * texColor;
@@ -149,7 +155,8 @@ struct SpotLight
 // -----------------------------------------------------------------------------
 vec4 ComputeSpotLightContribution(SpotLight slight, vec3 vposition, vec3 vnormal)
 {
-    vec4 texColor = vec4(vec3(0.7), 1.0);
+    // vec4 texColor = vec4(vec3(0.7), 1.0);
+    vec4 texColor = texture(u_Texture, v_TexCoord);
 
     // ambient
     // vec4 ambient = slight.ambient * material.ambient * texColor;
@@ -181,10 +188,6 @@ vec4 ComputeSpotLightContribution(SpotLight slight, vec3 vposition, vec3 vnormal
     float attenuation = 10.0 / (1.0 + 0.09 * d + 0.032 * d * d);
     return (diffuse + specular) * attenuation;
 }
-
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-uniform sampler2D u_Texture;
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
