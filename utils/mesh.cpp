@@ -155,7 +155,8 @@ static bool parseline(const std::string &line, mesh& m)
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 mesh::mesh(const char* filename)
-    : _name(filename)
+    : _name(filename),
+      _file(filename)
 {
     std::ifstream obj(filename);
     if ( !obj.is_open() )

@@ -21,6 +21,7 @@ struct mesh
     mesh(const char* filename);
 
     std::string                _name;
+    std::string                _file;
     std::vector<float>         _vertices;
     std::vector<float>         _normals;
     std::vector<float>         _textureCoords;

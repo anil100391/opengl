@@ -40,7 +40,7 @@ add_executable (app vendor/stb_image/stb_image.cpp ${imgui_src} ${utils_src} ${c
 if (MSVC)
     target_link_libraries (app PRIVATE glfw GLEW::GLEW opengl32 freetype irrKlang.lib)
 else()
-    target_link_libraries (app GL glfw GLEW freetype IrrKlang)
+    target_link_libraries (app GL glfw GLEW freetype IrrKlang assimp)
 endif()
 
 # copy resources to bin directory
