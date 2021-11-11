@@ -18,7 +18,7 @@ namespace test
 // -----------------------------------------------------------------------------
 TestObjLoader::TestObjLoader(Application *app)
     : Test(app),
-      _mesh("res/coca_cola_can.obj"),
+      _mesh("res/earth.obj"),
       _material { glm::vec4(0.6f, 0.6f, 0.6f, 1.0f), // ambient
                   glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // diffuse
                   glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), // specular
@@ -49,7 +49,7 @@ TestObjLoader::TestObjLoader(Application *app)
     _selectShader = std::make_unique<Shader>("res/shaders/select.shader");
     _shader->Bind();
 
-    _texture = std::make_unique<Texture>("res/textures/coca_cola_can.png");
+    _texture = std::make_unique<Texture>("res/textures/8k_earth_daymap.jpg");
     _texture->Bind(0);
     _shader->SetUniform1i("u_Texture", 0);
 }
