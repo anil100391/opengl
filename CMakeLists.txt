@@ -43,3 +43,12 @@ else()
     target_link_libraries (app GL glfw GLEW freetype IrrKlang)
 endif()
 
+# copy resources to bin directory
+add_custom_command(TARGET app POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:app>/res)
+
+add_custom_command(TARGET app POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/vendor/irrKlang/bin $<TARGET_FILE_DIR:app>)
+

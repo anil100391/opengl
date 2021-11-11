@@ -17,12 +17,12 @@ namespace test
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-class TestFragmentShader: public Test
+class TestFractal : public Test
 {
 public:
 
-    TestFragmentShader(Application *app);
-    ~TestFragmentShader();
+    TestFractal(Application *app);
+    ~TestFractal();
 
     void OnUpdate(float deltaTime) override;
     void OnRender() override;
@@ -31,6 +31,7 @@ public:
 
 private:
 
+    void PopulateMeshBuffers();
     void Draw();
 
     std::unique_ptr<MeshGL>         _quadGL;
