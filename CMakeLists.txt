@@ -18,6 +18,10 @@ include_directories ("${PROJECT_SOURCE_DIR}/vendor/imgui")
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/glm")
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/stb_image")
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/irrKlang/include")
+if (MSVC)
+	include_directories ("${PROJECT_SOURCE_DIR}/vendor/assimp/include")
+	link_directories ("${PROJECT_SOURCE_DIR}/vendor/assimp/lib")
+endif()
 
 link_directories ("${PROJECT_SOURCE_DIR}/vendor/irrKlang/lib")
 
@@ -38,7 +42,7 @@ add_compile_options(-D_CRT_SECURE_NO_WARNINGS)
 add_executable (app vendor/stb_image/stb_image.cpp ${imgui_src} ${utils_src} ${chess_src} ${ludo_src} ${tests_src} ${main_src})
 
 if (MSVC)
-    target_link_libraries (app PRIVATE glfw GLEW::GLEW opengl32 freetype irrKlang.lib)
+    target_link_libraries (app PRIVATE glfw GLEW::GLEW opengl32 freetype irrKlang.lib assimp-vc142-mt.lib)
 else()
     target_link_libraries (app GL glfw GLEW freetype IrrKlang assimp)
 endif()
@@ -51,4 +55,8 @@ add_custom_command(TARGET app POST_BUILD
 add_custom_command(TARGET app POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                        ${CMAKE_SOURCE_DIR}/vendor/irrKlang/bin $<TARGET_FILE_DIR:app>)
+
+add_custom_command(TARGET app POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/vendor/assimp/bin $<TARGET_FILE_DIR:app>)
 
