@@ -323,7 +323,7 @@ void TestGame::OnImGuiRender()
 {
     ImGui::SliderFloat3("Rotation", &_playerOrientation[0], 0, 2.0f * glm::pi<float>() );
     ImGui::SliderFloat3("Wing", &_dwing[0], -0.01f, 0.01f);
-    ImGui::SliderFloat("Speed", &_dtime, 0.0005f, 0.002f);
+    ImGui::SliderFloat("Speed", &_dtime, 0.0001f, 0.001f, "%.5f");
     ImGui::Text("%d", (int)_windWake[0].size()/7);
 }
 
