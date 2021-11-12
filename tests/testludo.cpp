@@ -501,7 +501,7 @@ std::array<std::array<float, 8>, 12> TestLudo::PieceGL::GetPieceTexCoordinates()
     constexpr static float dx = 1.0f / 6;
     constexpr static float dy = 1.0f / 2;
 
-    std::array<std::array<float, 8>, 12> data;
+    std::array<std::array<float, 8>, 12> data{};
     using PT = TestLudo::PieceGL::Type;
     auto to_int = []( PT pt ) { return static_cast<int>(pt); };
 
