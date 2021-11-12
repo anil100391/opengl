@@ -18,7 +18,7 @@
 #include <utility>
 #include <iostream>
 
-// #include "../vendor/imgui/imgui.h"
+#include <irrKlang.h>
 
 namespace test
 {
@@ -50,6 +50,7 @@ private:
 
     void         CreateEarth();
     void         CreatePlayer();
+    void         CreateWake();
     void         SetupCamera();
 
     const material& GetMaterial() const;
@@ -58,11 +59,17 @@ private:
 
     Asset                           _earth;
     Asset                           _player;
+    Asset                           _wake;
 
     glm::mat4                       _playerXform;
     glm::vec3                       _playerOrientation;
+    glm::vec3                       _dwing;
+    float                           _dtime = 0.0005f;
+
+    std::vector<float>              _windWake[2];
 
     std::unique_ptr<Shader>         _shader;
+    std::unique_ptr<Shader>         _lineShader;
 
     glm::mat4                       _viewMat;
     glm::mat4                       _projMat;
@@ -72,6 +79,8 @@ private:
 
     double                          _time = 0.0;
     bool                            _paused = true;
+
+    irrklang::ISoundEngine          *_soundEngine = nullptr;
 };
 
 }

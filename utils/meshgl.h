@@ -18,7 +18,8 @@ public:
 
     MeshGL( const std::vector<float> &vertices,
             const VertexBufferLayout &layout,
-            const std::vector<unsigned int> &conn );
+            const std::vector<unsigned int> &conn,
+            int bufferUsage=GL_STATIC_DRAW);
 
     ~MeshGL() = default;
 
@@ -30,7 +31,8 @@ protected:
 
     void PopulateBuffers( const std::vector<float> &vertices,
                           const VertexBufferLayout &layout,
-                          const std::vector<unsigned int> &conn );
+                          const std::vector<unsigned int> &conn,
+                          int bufferUsage=GL_STATIC_DRAW);
 
     std::unique_ptr<VertexArray>    _vao;
     std::unique_ptr<VertexBuffer>   _vbo;
