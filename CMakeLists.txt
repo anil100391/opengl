@@ -14,6 +14,8 @@ else ()
     include_directories ("/usr/include/freetype2")
 endif()
 
+add_subdirectory("vendor/assimp")
+
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/imgui")
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/glm")
 include_directories ("${PROJECT_SOURCE_DIR}/vendor/stb_image")
@@ -21,6 +23,9 @@ include_directories ("${PROJECT_SOURCE_DIR}/vendor/irrKlang/include")
 if (MSVC)
 	include_directories ("${PROJECT_SOURCE_DIR}/vendor/assimp/include")
 	link_directories ("${PROJECT_SOURCE_DIR}/vendor/assimp/lib")
+else()
+    include_directories ("${PROJECT_BUILD_DIR}/vendor/assimp/include")
+    link_directories ("${PROJECT_BUILD_DIR}/vendor/assimp/bin")
 endif()
 
 link_directories ("${PROJECT_SOURCE_DIR}/vendor/irrKlang/lib")
@@ -55,8 +60,4 @@ add_custom_command(TARGET app POST_BUILD
 add_custom_command(TARGET app POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                        ${CMAKE_SOURCE_DIR}/vendor/irrKlang/bin $<TARGET_FILE_DIR:app>)
-
-add_custom_command(TARGET app POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/vendor/assimp/bin $<TARGET_FILE_DIR:app>)
 
