@@ -1,11 +1,11 @@
 #ifndef _mesh_gl_h_
 #define _mesh_gl_h_
 
-#include "../renderer.h"
-#include "../vertexarray.h"
-#include "../vertexbuffer.h"
-#include "../vertexbufferlayout.h"
-#include "../indexbuffer.h"
+#include <graphics/renderer.h>
+#include <graphics/vertexarray.h>
+#include <graphics/vertexbuffer.h>
+#include <graphics/vertexbufferlayout.h>
+#include <graphics/indexbuffer.h>
 
 #include <vector>
 #include <memory>
