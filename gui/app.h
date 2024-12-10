@@ -5,9 +5,9 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
-#include "events/keyevent.h"
-#include "events/mouseevent.h"
-#include "events/windowevent.h"
+#include <events/keyevent.h>
+#include <events/mouseevent.h>
+#include <events/windowevent.h>
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------

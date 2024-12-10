@@ -10,3 +10,4 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_subdirectory (graphics)
 add_subdirectory (utils)
+add_subdirectory (gui)
