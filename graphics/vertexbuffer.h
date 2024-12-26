@@ -15,6 +15,7 @@ public:
     void Bind() const;
     void Unbind() const;
     void BufferData(const void* data, unsigned int size, int usage = GL_STATIC_DRAW) const;
+    void UpdateBufferData(const void* data, unsigned int size) const;
 
 private:
 

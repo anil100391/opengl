@@ -4,7 +4,7 @@ find_package(assimp CONFIG REQUIRED)
 find_package(Freetype CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
-file (GLOB main_src "${PROJECT_SOURCE_DIR}/examples/*.cpp" )
+file (GLOB main_src "${PROJECT_SOURCE_DIR}/examples/testapp.cpp" )
 
 # undefine min/max macro from msvc minwindef.h
 add_compile_options(-DNOMINMAX)
@@ -17,9 +17,11 @@ include_directories (${PROJECT_SOURCE_DIR})
 include_directories (${PROJECT_SOURCE_DIR}/gui)
 
 add_executable (main ${main_src})
+add_executable (plot ${PROJECT_SOURCE_DIR}/examples/testplot.cpp)
 
 if (MSVC)
     target_link_libraries (main PRIVATE GLEW::GLEW glm::glm-header-only assimp::assimp Freetype::Freetype imgui::imgui oglgraphics oglutils oglapp)
+    target_link_libraries (plot PRIVATE GLEW::GLEW glm::glm-header-only assimp::assimp Freetype::Freetype imgui::imgui oglgraphics oglutils oglapp)
 else()
     target_link_libraries (oglutils glm::glm-header-only assimp::assimp oglgraphics)
 endif()

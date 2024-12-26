@@ -19,6 +19,13 @@ void VertexBuffer::BufferData(const void* data, unsigned int size, int usage) co
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
+void VertexBuffer::UpdateBufferData( const void *data, unsigned int size ) const
+{
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 VertexBuffer::~VertexBuffer()
 {
     glDeleteBuffers(1, &_rendererID);
