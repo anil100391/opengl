@@ -164,7 +164,6 @@ Application::Application( const WindowProperties &wprops )
         return;
     }
 
-    glfwMaximizeWindow( _window );
     glfwSetWindowUserPointer( _window, this );
     glfwSwapInterval( 1 );
     glfwMakeContextCurrent( _window );
